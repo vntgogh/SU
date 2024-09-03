@@ -1,0 +1,44 @@
+#logo img {
+	float: left;
+	margin: 10px 0px 0px 0px;
+}
+
+h2 {
+   padding-left: 1em;
+}
+
+h3 {
+   padding-left: 2em;
+}
+
+form#search {
+	clear: none;
+}
+
+div#main {
+	clear: both;
+}
+
+.nav {
+	width: auto;
+	margin-left: auto;
+}
+
+textarea.wikitext {
+    font-family: monospace;
+}
+a[href="/trac/archi-l3s5/about"] {
+display: none;
+}
+a[href="/trac/archi-l3s5/wiki/TracGuide"] {                                      
+display: none;
+}
+a[href="/trac/archi-l3s5/wiki/TitleIndex"] {                                      
+display: none;
+}
+a[href="/trac/archi-l3s5/prefs"] {                                      
+display: none;
+}
+a[href="/trac/dev/roadmap"] {
+display: none;
+}

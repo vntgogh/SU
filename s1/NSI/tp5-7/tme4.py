@@ -1,0 +1,1 @@
+def rle(chaine: str):
