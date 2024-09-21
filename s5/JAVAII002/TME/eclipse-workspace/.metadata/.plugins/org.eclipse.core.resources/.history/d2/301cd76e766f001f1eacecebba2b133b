@@ -1,0 +1,32 @@
+package pobj.motx.tme1;
+import java.util.*; 
+
+public class Emplacement {
+	private ArrayList<Case> cases; //cases noires à compléter
+	
+	public Emplacement() {
+		cases = new ArrayList<Case>();
+	}
+	
+	public void add(Case e) {
+		if (e.isPleine()||(e.getChar()>='a'&&e.getChar()<='z')) {
+		cases.add(e);
+		}
+	}
+	
+	public int size() {
+		return cases.size();
+	}
+	
+	public Case getCase(int i) {
+		return cases.get(i);
+	}
+	
+	public String toString() {
+		String s = "";
+		for(Case c : cases) {
+		s += c.getChar()+"\n";
+		}
+		return s;
+	}
+}

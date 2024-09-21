@@ -1,0 +1,42 @@
+package pobj.motx.tme1;
+
+public class Grille {
+    private Case[][] mat;
+    
+    public Grille(int hauteur, int largeur) {
+        for(int i=0; i<hauteur; i++) {
+            for(int j=0; j<largeur; j++) {
+                mat[i][j]=new Case(i,j,' ');
+            }
+        }
+    }
+    
+    public Case getCase(int lig, int col) {
+        if (lig < mat.length && col < mat[0].length){
+        return mat[lig][col];
+    }
+        return null;
+    }
+
+    @Override 
+    public String toString() { 
+    StringBuilder sb = new StringBuilder(); 
+    sb.append("Grille de mots croisÃ©s\n"); 
+    sb.append("("+mat.length+"lignes et "+mat[0].length+"colonnes)"); 
+    return sb.toString(); 
+    } 
+    
+    public int nbLig() {return mat.length;}
+    public int nbCol() {return mat[0].length;}
+    public Grille copy() {
+        Grille n = new Grille(nbLig(),nbCol());
+        for (int lig = 0; lig<nbLig(); lig++) {
+            for (int col = 0; col<nbCol(); col++) {
+                Case nc = this.getCase(lig, col);
+                n.mat[lig][col] = new Case(nc.getLig(), nc.getCol(), nc.getChar());
+            }
+        }
+        return n;
+    }
+    
+}

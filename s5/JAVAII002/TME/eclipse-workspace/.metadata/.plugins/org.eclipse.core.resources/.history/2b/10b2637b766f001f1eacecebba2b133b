@@ -1,0 +1,33 @@
+package pobj.motx.tme1;
+
+public class Case {
+	private int lig,col;
+	private char val; //vide(' ')/pleine(*)/lettre(a-z)
+	
+	public Case(int lig, int col, char c) {
+		this.lig=lig;
+		this.col=col;
+		this.val=c;
+	}
+	
+	//Accesseurs
+	public int getLig() {return this.lig;}
+	public int getCol() {return this.col;}
+	public char getChar() {return this.val;}
+	public void setChar(char c) {this.val=c;}
+	
+	//Une case contient une lettre si elle n'est ni vide, ni pleine
+	public boolean isVide() {
+		if(this.val==' '){
+		return true;
+		}
+		return false;
+	}
+	
+	public boolean isPleine() {
+		if(this.val=='*'){
+		return true;
+		}
+		return false;
+	}
+}
