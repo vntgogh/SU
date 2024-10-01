@@ -1,4 +1,5 @@
 #DEMINEUR TME 5-S1
+from math import random
 
 from enum import Enum
 class Status(Enum):
