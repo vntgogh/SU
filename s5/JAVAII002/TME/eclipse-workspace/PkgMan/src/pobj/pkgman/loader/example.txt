@@ -1,0 +1,4 @@
+java-7.0:
+java-8.0:
+junit-4.0: java-8.0
+eclipse-4.6: java-7.0 junit-4.0
