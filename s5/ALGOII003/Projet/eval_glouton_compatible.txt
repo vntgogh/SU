@@ -1,0 +1,3 @@
+f = 15
+pmax = 200
+V Pire_Ecart Ecart_Moyen

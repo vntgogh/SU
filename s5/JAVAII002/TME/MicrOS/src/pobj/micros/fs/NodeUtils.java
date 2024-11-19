@@ -7,22 +7,23 @@ public class NodeUtils {
 		if(path=="") {
 			return root;
 		}
-		IDirectoryNode d = new DirectoryNode("root");
-		String[] tpath = path.split("/");
-		if(tpath==null) {
-			return root;
-		}
-		IDirectoryNode rnode= new DirectoryNode(tpath[0]);
-		root.addChild(rnode);
-		for(int i = 1; i<tpath.length-1;i++) {
-			if(i==1) {
-				rnode.addChild(new Node(tpath[i-1]));
+		IDirectoryNode d;
+		String[] x = path.split("/");
+		d = (IDirectoryNode) root.getChild(x[0]);
+		if(x.length == 1) {
+			if(d==null) {
+				throw new OSError("Invalid path");
 			}
-			IDirectoryNode nnode = new DirectoryNode(tpath[i-1]);			
-			nnode.addChild(new Node(tpath[i]));
+			return d;
 		}
-		
+		for(int i = 1; i<x.length; i++) {
+			d.addChild(new DirectoryNode(x[i]));
+			if(d.getChild(x[i]) == null) {
+				throw new OSError("Invalid path");
+			}
 
+			d = (IDirectoryNode) d.getChild(x[i]);
+		}
 		return d;
 	}
 }
