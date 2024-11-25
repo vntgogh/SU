@@ -3,7 +3,6 @@ import random
 import Algo2_v3 as A2
 import Algo3 as A3
 
-
 def TGC(k,V):
     S=0
     j=1

@@ -10,6 +10,7 @@ def read():
         V = [int(val) for val in contenu[2:]]
     return S, K, V
 
+"""m(s,i,V) - Retourne le nombre de bocaux minimaux a utlisé dans V de taille i pour atteindre la quantité s ."""
 def m(s, i, V):
     """
     But : Calculer récursivement le nombre minimal de bocaux nécessaires pour atteindre la quantité 
