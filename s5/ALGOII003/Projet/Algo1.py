@@ -13,21 +13,17 @@ def read():
 """m(s,i,V) - Retourne le nombre de bocaux minimaux a utlisé dans V de taille i pour atteindre la quantité s ."""
 def m(s, i, V):
     """
-    But : Calculer récursivement le nombre minimal de bocaux nécessaires pour atteindre la quantité 
-    s avec les i+1 premiers types de bocaux dans V
     Cas de base :
-        s=0 : Aucun bocal nécessaire, retourne 0
-        s<0 : Impossible d’atteindre cette quantité -> retourne l'infini
-        i=0 : Si seul V[0] (le plus petit type de bocal) est disponible :
-                Si s est divisible par V[0], utilise autant de V[0] que nécessaire
-                Sinon, retourne math.inf (impossible de former s)
+        s=0 : aucun bocal nécessaire, retourne 0
+        s<0 : impossible d’atteindre cette quantité -> retourne l'infini
+        i=0 : si seul V[0] est dispo 
     Cas général :
         Sans utiliser le bocal V[i] : Appel récursif avec i−1
         En utilisant le bocal V[i] : Réduit s de V[i] et ajoute un bocal
         Retourne le minimum entre ces deux solutions
     """
     if s == 0:
-        return 0  # On n'a pas besoin de bocal supplémentaires
+        return 0  # On n'a pas besoin de bocal supplémentaire
     elif s < 0:
         return math.inf  # Cas impossible
     elif i==0:  # Aucun élément utilisable
@@ -43,7 +39,7 @@ def m(s, i, V):
 
 def m_threading(s, i, V,stop_event):
     """
-    But : Calcule m(s,i,V) avec la possibilité d’être interrompu après un certain temps grâce à un signal (stop_event)
+    But : Calcule m(s,i,V) avec la possibilité d’être interrompu après un certain temps grâce à un signal
     
     Changements par rapport à m(s,i,V) :
         Si stop_event est déclenché, l'exécution s'arrête immédiatement en retournant 0
@@ -67,13 +63,6 @@ def m_threading(s, i, V,stop_event):
         avec_bocal = m_threading(s - V[i], i, V,stop_event) + 1
         return min(sans_bocal, avec_bocal)
 
-def main_lecture():
-    """
-    Lit les données depuis data.txt
-    Calcule le nombre minimal de bocaux nécessaires pour S avec m(s,i,V) et affiche le résultat
-    """
-    S, K, V = read()
-    print(m(S,len(V)-1,V))
 
 def main_threading(S,V,stop_event):
     """

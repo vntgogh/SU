@@ -3,6 +3,9 @@ import random
 import Algo2_v3 as A2
 import Algo3 as A3
 
+"""vérifie si un système de capacité V de taille k est glouton-compatible
+complexité polynomiale : O(n² x K²)
+"""
 def TGC(k,V):
     S=0
     j=1
@@ -15,7 +18,7 @@ def TGC(k,V):
     return True
 
 
-"""sc_random(k,pmax) - retourne un systeme de capacite de taille k avec des élement aléatoire de 2 a pmaxz"""
+"""retourne un systeme de capacite de taille k avec des élements aléatoires de 2 a pmax"""
 def sc_random(k,pmax):
     V=[0 for _ in range(k)]
     rtab=[0 for _ in range(k-1)]
@@ -30,7 +33,7 @@ def sc_random(k,pmax):
         V[i]=rtab[i-1]
     return V
 
-"""proportion_GloutonCompatible(k,pmax) - retourne la proportionnalité de systeme glouton compatible de taille 3 a k si k!=1,2"""
+"""retourne la proportionnalité de systeme glouton compatible de taille 3 a k si k!=1,2"""
 def proportion_GloutonCompatible(k,pmax):
     nb_GC=0
     if(k==1 or k==2):
@@ -44,12 +47,8 @@ def proportion_GloutonCompatible(k,pmax):
     return ((nb_GC/k)*100)
 
 
-"""resolution (f,pmax) - ecris dans un fichier les pires écart et les moyens pour la solution des algo II et III pour un même systeme, 
-                        un S qui varie de pmax a f*pmax,
-
-"""
-
-
+"""écrit dans un fichier les pires écarts et les moyens pour la solution des algo II et III pour un même systeme, 
+un S qui varie de pmax a f*pmax"""
 def resolution(f,pmax):
     nb_GC=0
     nb_NGC=0
@@ -86,8 +85,7 @@ def resolution(f,pmax):
                 fichier.write("Ecart Moyen = "+(str)(ecart_moyen/nb_ecart)+"\n")
 
 
-"""eval_multiple_proportion(Q,pmax) - ecris dans un fichier des proportions de systeme glouton compatible allant jusqu'a Q"""
-
+"""écris dans un fichier des proportions de systeme glouton compatible allant jusqu'a Q"""
 def eval_multiple_proportion(Q,pmax):
     with open("eval_"+(str)(Q)+"_glouton_proportion.txt", "w") as fichier:
         fichier.write("K proportionalite\n")
