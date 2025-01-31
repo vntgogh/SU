@@ -176,27 +176,28 @@ def GS_etu(cE,cP,capacity):
                 last_etu=cP[ask][pos_last_etu]
                 #print(len(list_etu))
                 #fichier.write(pos_last_etu,tabPref[ask][etu_courant])
-                #Si le nouvel étudiant a une meilleure position (pris dans la tableau de verification) que l'etudiant pris dans le tas alors on le remplace.
-                if(tabPref[ask][etu_courant]<pos_last_etu):
-                    #fichier.write(f"Tas courant : {tas[ask]} Master courant : {ask} Etudiant courant : {list_etu[0]} Pire etudiant : {last_etu}\n")
-                    #breakpoint()
-                    #print("on choisis l'etu : ",list_etu[0]," a la place de ",last_etu,"pour le master : ", ask)
-                    pop(tas[ask])
-                    put(tas[ask],tabPref[ask][etu_courant])
-                    
-                    affectation[ask].append(etu_courant)
-                    affectation[ask].remove((int)(last_etu))
-                    #on ajoute dans le tas le nouvel étudiant et on remet l'etudiant déjà choisis dans la liste_etu
-                    suivi[etu_courant]+=1
-                    
-                    q.put((int)(last_etu))
-                    #fichier.write(f"Tas courant : {tas[ask]} Master courant : {ask} Etudiant courant : {list_etu[0]} Pire etudiant : {last_etu}\n")
+                if tas[ask]:
+                    #Si le nouvel étudiant a une meilleure position (pris dans la tableau de verification) que l'etudiant pris dans le tas alors on le remplace.
+                    if(tabPref[ask][etu_courant]<pos_last_etu):
+                        #fichier.write(f"Tas courant : {tas[ask]} Master courant : {ask} Etudiant courant : {list_etu[0]} Pire etudiant : {last_etu}\n")
+                        #breakpoint()
+                        #print("on choisis l'etu : ",list_etu[0]," a la place de ",last_etu,"pour le master : ", ask)
+                        pop(tas[ask])
+                        put(tas[ask],tabPref[ask][etu_courant])
+                        
+                        affectation[ask].append(etu_courant)
+                        affectation[ask].remove((int)(last_etu))
+                        #on ajoute dans le tas le nouvel étudiant et on remet l'etudiant déjà choisis dans la liste_etu
+                        suivi[etu_courant]+=1
+                        
+                        q.put((int)(last_etu))
+                        #fichier.write(f"Tas courant : {tas[ask]} Master courant : {ask} Etudiant courant : {list_etu[0]} Pire etudiant : {last_etu}\n")
 
-                    #breakpoint()
-                    break
-                else:
-                    suivi[etu_courant]+=1
-                    continue
+                        #breakpoint()
+                        break
+                    else:
+                        suivi[etu_courant]+=1
+                        continue
 
     return affectation
 
@@ -255,6 +256,7 @@ def GS_master(cE,cP,capacity,list_master):
                 pos_last_master=tabPref[(int)(cP[list_master[0]][0])][eleve_affect[(int)(cP[list_master[0]][0])]]
                 ancienmaster=eleve_affect[(int)(cP[list_master[0]][0])]
                 #print(ancienmaster)
+                
                 if(post_actual_master<pos_last_master):
 
                     #le master courant est accepter
@@ -339,31 +341,40 @@ def generate_cP(n,nb_parcours):
     return cP
 
 
+
 dix_tests_master = [0.0 for i in range(10)]
 dix_tests_etu = [0.0 for j in range(10)]
 
-for n in range(200,2000,200):
+for n in range(200,2200,200):
     cE = generate_cE(n,9)
     cP = generate_cP(n,9)
-    capacites = [-1 for i in range(9)]
-    tot = n
-    for i in range(len(capacites)):
-        capacites[i] = random.randint(0,tot)
-        tot = tot - capacites[i]
-        if sum(capacites) < tot & i == len(capacites)-1:
-            capacites[i] = tot
+
+    capacites = [random.randint(1, n//2) for _ in range(9)] #capacites entre 1 et n/2 pour equité
+    while sum(capacites) != n:
+        diff = n-sum(capacites)
+        if diff > 0: #on met diff dans une capacite random
+            capacites[random.randint(0, 8)] += diff
+        if diff < 0: #si sum(capacites) > n
+            #on ajt diff(negatif) à une capacite random
+            ind = random.randint(0, 8)
+            capacites[ind] = max(1, capacites[ind] + diff) #max entre 1 pr eviter les res negatifs
+   
     print(capacites)
+
     list_etu = [i for i in range(n)]
     debut = time.time()
-    affectes = GS_master(cE,cP, capacites, list_etu)
+    affectes = GS_master(cE,cP, capacites,list_etu)
     fin = time.time()
     print("coté master : ", fin-debut)
     dix_tests_master.append(fin-debut)
     debut = time.time()
-    #affectes = GS_etu(cE,cP, capacites)
+    affectes = GS_etu(cE,cP, capacites)
     fin = time.time()
     dix_tests_etu.append(fin-debut)
     print("coté etu : ", fin-debut)
+
+print("moyenne temps parcours = ", sum(dix_tests_master) / len(dix_tests_master)," secondes")
+print("moyenne etu = ", sum(dix_tests_etu) / len(dix_tests_etu)," secondes")
 
 affect_etu_optimal = GS_etu(studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),capacity_master("PrefSpe.txt"),[0,1,2,3,4,5,6,7,8,9,10])
 affect_master_optimal = GS_master(studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),capacity_master("PrefSpe.txt"),[0,1,2,3,4,5,6,7,8])

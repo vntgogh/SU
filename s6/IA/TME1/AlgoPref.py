@@ -114,18 +114,19 @@ def gpetu(prefetu, prefspe, capacitespe):
 
                 break
             else:
-                #position de l'etudiant le - prefere de specourant
-                pos_etucompare = valracine(tas[specourant])
-                etucompare = prefspe[specourant][pos_etucompare] 
+                if tas[specourant]:
+                    #position de l'etudiant le - prefere de specourant
+                    pos_etucompare = valracine(tas[specourant])
+                    etucompare = prefspe[specourant][pos_etucompare] 
 
-                #si etucourant est prefere à etucompare
-                if pos[specourant][etucourant] < pos[specourant][etucompare]:
-                    affectes[specourant].remove(etucompare) #supprime le - prefere
-                    libres.append(etucompare) #rajoute le - prefere aux etudiants libres
-                    affectes[specourant].append(etucourant) #affecte etucourant à specourant
-                    last = pop(tas[specourant]) #enleve etucompare 
-                    put(tas[specourant], pos[specourant][etucourant]) #affecte etucourant
-                    break
+                    #si etucourant est prefere à etucompare
+                    if pos[specourant][etucourant] < pos[specourant][etucompare]:
+                        affectes[specourant].remove(etucompare) #supprime le - prefere
+                        libres.append(etucompare) #rajoute le - prefere aux etudiants libres
+                        affectes[specourant].append(etucourant) #affecte etucourant à specourant
+                        last = pop(tas[specourant]) #enleve etucompare 
+                        put(tas[specourant], pos[specourant][etucourant]) #affecte etucourant
+                        break
 
         prefetu[etucourant].pop(0) #chaque etu propose une UNIQUE fois à chaque parcours
 
@@ -149,31 +150,31 @@ def gpspe(prefetu, prefspe, capacitespe):
 
     #tant qu'il existe des étudiants sans parcours
     while libres:
-        specourant = libres[0] #premier etudiant de la file
-        print(specourant)
+        specourant = libres.pop(0) #premier etudiant de la file
         for etucourant in prefspe[specourant]:
-            if capacitespe[specourant] > 0: #si capacité pas remplie
+            if paretu[etucourant] == -1:
                 affectes[specourant].append(etucourant)
-                capacitespe[specourant] -= 1  #réduire la capacité du parcours
-                print(capacitespe[specourant])
-                paretu[etucourant] = specourant #specourant devient parocurs de etucourant
-                print(etucourant," est affecte dans ", specourant)
+                capacitespe[specourant] -= 1
+                paretu[etucourant] = specourant
                 break
             else:
                 specompare = paretu[etucourant]
 
-                #si specourant est préféré à specompare
                 if pos[etucourant][specourant] < pos[etucourant][specompare]:
-                    print(etucourant, " change ", specompare," pour ", specourant)
-                    libres.append(specompare) #ajouter specompare à libres
-
-                    #affecter etucourant à specourant
-                    paretu[etucourant] = specourant
-                    affectes[specourant].append(etucourant)
+                    #libere specompare
                     affectes[specompare].remove(etucourant)
+                    capacitespe[specompare] += 1
+                    if capacitespe[specompare] > 0 and specompare not in libres:
+                        libres.append(specompare)
+
+                    #ajt l'etucourant a specourant
+                    affectes[specourant].append(etucourant)
+                    capacitespe[specourant] -= 1
+                    paretu[etucourant] = specourant
                     break
-                libres.remove(specourant)
-                print(libres)
+
+        if capacitespe[specourant] > 0 and specourant not in libres:
+            libres.append(specourant)
 
     return affectes
 
@@ -242,21 +243,26 @@ def generate_cP(n,nb_parcours):
 
 dix_tests_master = [0.0 for i in range(10)]
 dix_tests_etu = [0.0 for j in range(10)]
-
-for n in range(200,2000,200):
+i=1
+for n in range(200,2200,200):
+    print("test n°",i)
     cE = generate_cE(n,9)
     cP = generate_cP(n,9)
-    capacites = [-1 for i in range(9)]
-    tot = n
-    for i in range(len(capacites)):
-        capacites[i] = random.randint(0,tot)
-        tot = tot - capacites[i]
-        if sum(capacites) < tot & i == len(capacites)-1:
-            capacites[i] = tot
+
+    capacites = [random.randint(1, n//2) for _ in range(9)] #capacites entre 1 et n/2 pour equité
+    while sum(capacites) != n:
+        diff = n-sum(capacites)
+        if diff > 0: #on met diff dans une capacite random
+            capacites[random.randint(0, 8)] += diff
+        if diff < 0: #si sum(capacites) > n
+            #on ajt diff(negatif) à une capacite random
+            ind = random.randint(0, 8)
+            capacites[ind] = max(1, capacites[ind] + diff) #max entre 1 pr eviter les res negatifs
+   
     print(capacites)
-    list_etu = [i for i in range(n)]
+
     debut = time.time()
-    #affectes = gpspe(cE,cP, capacites)
+    affectes = gpspe(cE,cP, capacites)
     fin = time.time()
     print("coté master : ", fin-debut)
     dix_tests_master.append(fin-debut)
@@ -265,15 +271,20 @@ for n in range(200,2000,200):
     fin = time.time()
     dix_tests_etu.append(fin-debut)
     print("coté etu : ", fin-debut)
+    
+    i+=1
+
+print("moyenne temps parcours = ", sum(dix_tests_master) / len(dix_tests_master)," secondes")
+print("moyenne etu = ", sum(dix_tests_etu) / len(dix_tests_etu)," secondes")
 
 
-contenu = ex.lectureFichier("PrefSpe.txt")
-capacite = [int(x) for x in contenu[1][1:]]
-print("coté étudiants :",gpetu(prefetu("PrefEtu.txt"),prefspe("PrefSpe.txt"),capacite))
+# contenu = ex.lectureFichier("PrefSpe.txt")
+# capacite = [int(x) for x in contenu[1][1:]]
+# print("coté étudiants :",gpetu(prefetu("PrefEtu.txt"),prefspe("PrefSpe.txt"),capacite))
 
-contenu = ex.lectureFichier("PrefSpe.txt")
-capacite = [int(x) for x in contenu[1][1:]]
-print("cote parcours :",gpspe(prefetu("PrefEtu.txt"), prefspe("PrefSpe.txt"), capacite))
+# contenu = ex.lectureFichier("PrefSpe.txt")
+# capacite = [int(x) for x in contenu[1][1:]]
+# print("cote parcours :",gpspe(prefetu("PrefEtu.txt"), prefspe("PrefSpe.txt"), capacite))
 
 # res = gpetu(prefetu("PrefEtu.txt"), prefspe("PrefSpe.txt"), capacite)
 # print(paires_instables(prefetu("PrefEtu.txt"), prefspe("PrefSpe.txt"), capacite, res))
