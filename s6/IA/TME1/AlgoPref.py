@@ -213,10 +213,10 @@ def paires_instables(prefetu,prefspe,capacitespe,affectes):
                 if spepref == specourant: #pas une paire instable
                     break  
                 else:
-                    etucompare = affectes[spepref][0] #etudiant le - préféré pour specourant
-                    for j in range(1, len(affectes[spepref])):
+                    etucompare = affectes[spepref][0] #prelier etudiant affecte à spepref
+                    for j in range(1, len(affectes[spepref])): #etudiants affectes a spepref
                         if pos[spepref][affectes[spepref][j]] > pos[spepref][etucompare]:
-                            etucompare = affectes[spepref][j]
+                            etucompare = affectes[spepref][j] #recupere l'etudiant le - prefere de spepref
 
                     #si specourant préfère etu à etucompare
                     if pos[spepref][etucourant] < pos[spepref][etucompare]:
