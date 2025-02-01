@@ -1,5 +1,0 @@
-EX 2
-2.1 - créer un tas vide R
-    - copier le plus grand tas -> O(max{nA,nB})
-    - ajouter les éléments du plus petit tas dans R -> O(min{nA,nB})
-    
