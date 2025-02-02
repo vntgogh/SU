@@ -3,100 +3,33 @@ from copy import deepcopy
 import random
 import queue
 import time
-
-
-
-
-""" question 2
-1. O(1), structure : file (UTILISER QUEUE)
-2. O(1), structure : tableau de mise a jour du suivi des demandes
-3. O(1), structure : matrice des positions des etudiants j pour chaque parcours i
-4. O(1), structure : tas(la racine est l'étudiant le - préféré)
-5. O(1.log(n)), structure : opérations des listes (append et remove) O(1) (négligable) et Mise a jour du tas en O(log(n))
-"""
-
-""" question 4
-1. O(1), structure : file (UTILISER QUEUE)
-2. O(1), structure : liste (prefetu[i])
-3. O(1), structure : matrice des positions des etudiants j pour chaque parcours i
-4. O(1), structure : tableau de positions
-5. O(1.log(n)), structure : opérations des listes (append et remove) O(1) (négligable) et Mise a jour du tas en O(log(n))
-"""
-
-def put(heap, value):
-    """Ajoute une valeur au tas."""
-    heap.append(value)
-    moveup(heap, len(heap) - 1)
-
-def pop(heap):
-    """Retire et retourne la plus grande valeur du tas."""
-    if not heap:
-        raise IndexError("Le tas est vide.")
-    # Échanger la racine avec le dernier élément
-    echange(heap, 0, len(heap) - 1)
-    # Retirer la racine
-    max_value = heap.pop()
-    # Réorganiser le tas
-    movedown(heap, 0) #Le dernier élement est en haut du tas on doit le ramener en bas
-    return max_value
-
-def valracine(heap):
-    """Retourne la plus grande valeur sans la retirer."""
-    if not heap:
-        raise IndexError("Le tas est vide.")
-    return heap[0]
-
-def moveup(heap, index):
-    """Remonte un élément pour rétablir la propriété de tas."""
-    parent_index = (index - 1) // 2
-    while index > 0 and heap[index] > heap[parent_index]: # Tant que le fils est plus grand que le parent on monte le fils
-        echange(heap, index, parent_index)
-        index = parent_index
-        parent_index = (index - 1) // 2
-
-def movedown(heap, index):
-    """Descend un élément pour rétablir la propriété de tas."""
-    size = len(heap)
-    while True: #Tant que le fils gauche ou le fils droit est plus grand que la valeur courante on fait descendre la valeur courant dans le tas
-        largest = index
-        left_child = 2 * index + 1
-        right_child = 2 * index + 2
-
-        if left_child < size and heap[left_child] > heap[largest]:
-            largest = left_child
-        if right_child < size and heap[right_child] > heap[largest]:
-            largest = right_child
-
-        if largest == index:
-            break
-        echange(heap, index, largest)
-        index = largest
-
-def echange(heap, i, j):
-    """Échange deux éléments dans le tableau."""
-    heap[i], heap[j] = heap[j], heap[i]
+import matplotlib.pyplot as plt
+import func_tas as heap
 
 
 def studentpref(file):
+    """
+    Lit le fichier des préférences des étudiants sur les masters et retourne une matrice CE qui,
+    en ligne i, contient le classement des parcours selon les préférences de l’étudiant i
+    """
     content = ex.lectureFichier(file)
-    #print((int)(content[0][0]))
     cE= [[0]*9 for i in range ((int)(content[0][0]))]
-    #print(cE)
     i=0
     for k in range(1,len(content)):
-        #print(content[k])
         w=2
         for j in range (9):
-            #print(content[k][w])
             cE[i][j]=content[k][w]
             w+=1
         i+=1
-    #print (content)
-    #print(cE)
+
     return cE
 
 
 def masterpref(file):
+    """
+    Lit le fichier des préférences des masters sur les étudiants et retourne une matrice CP qui,
+    en ligne i, contient le classement des étudiants selon les préférences du master i
+    """
     content = ex.lectureFichier(file)
     cP= [[0]*(int)(content[0][1]) for i in range (9)]
     i=0
@@ -106,23 +39,36 @@ def masterpref(file):
             cP[i][j]=content[k][w]
             w+=1
         i+=1
-    #print (cP)
+
     return cP
 
 
+""" question 2
+1. O(1), structure : Queue
+2. O(1), structure : tableau de mise a jour du suivi des demandes
+3. O(1), structure : matrice des positions des etudiants j pour chaque parcours i
+4. O(1), structure : tas(la racine est l'étudiant le - préféré)
+5. O(1.log(n)), structure : Mise a jour du tas en O(log(n))
+"""
+
 def capacity_master(file):
+    """
+    Retourne le tableau des capacités d'un parcours récupéré dans un fichier
+    """
     content = ex.lectureFichier(file)
     content[1].remove("Cap")
     return(content[1])
 
 
 def GS_etu(cE,cP,capacity):
-    #Initialisation des des étudiants et Master commme libre, pour chaque master un tas représentant les éleves du moins préferer au plus préferer
-    # et une liste pour chaque master avec la position dans le master de chaque éleve i a sont indice i en O(1)
-    # La recherche des préferences du master se fera dans le tas et on utilisera le tableau de verification en O(1)
-    #Retourne pour un tableau qui contient pour le i-eme étudiant sont parcours assigné
-
-    #Initialisation de la liste des etudiants
+    """
+    Initialisation des étudiants et Master commme libre. Pour chaque master, un tas représentant les élèves
+    du moins préféré au plus préféré et une liste pour chaque master avec la position dans le master de 
+    chaque éleve i
+    La recherche des préferences du master se fera dans le tas et on utilisera le tableau de verification en O(1)
+    Retourne un dictionnaire {étudiant : valeur} qui contient pour le i-ème étudiant, son parcours assigné
+    """
+    #Initialisation de la liste des etudiants tous libres au départ
     list_etu=[i for i in range (len(cE))]
 
     #Initialisation matrice des positions des étudiants dans chaque master
@@ -131,13 +77,11 @@ def GS_etu(cE,cP,capacity):
         for j in range(len(cP[0])):
             tabPref[i][(int)(cP[i][j])]=(int)(j)
 
-    #print("Tab pref : ",tabPref)
-
-    #Initialisation des tas du pire eleve dans chaque master
+    #Initialisation des tas dans chaque master
     tas = [[] for _ in range(len(cP))]
 
     #Tableau d'affectation pour le i-eme étudiant
-    affectation=[[] for _ in range (len(cP))]
+    affectation={} 
 
     #Initialisation de la Queue 
     q = queue.Queue(len(list_etu))
@@ -150,144 +94,121 @@ def GS_etu(cE,cP,capacity):
     while(not q.empty()):
         etu_courant=q.get()
         while(len(cE[etu_courant])!=0):
-            #print(cE[etu_courant],list_etu[0])
-            #print(tas)
             
             ask=(int)(cE[etu_courant][suivi[etu_courant]])
-            #Si il y a de la place on affecte le premier étudiant de la liste a sont i eme choix 
+
+            #S'il y a de la place on affecte le premier étudiant de la liste a son i-eme choix 
             if ((int)(capacity[ask])>0):
-                #fichier.write(f"Tas courant : {tas[ask]} Etudiant courant : {list_etu[0]} Master courant : {ask}\n")
-                #breakpoint()
-                #print(i,cE[etu_courant],(int)(tabPref[ask][etu_courant]))
-                affectation[ask].append(etu_courant)
-                put(tas[ask],(int)(tabPref[ask][etu_courant]))
+
+                heap.put(tas[ask],(int)(tabPref[ask][etu_courant]))
                 capacity[ask]=(int)(capacity[ask])-1
                 suivi[etu_courant]+=1
-                #print("L'etudiant ",list_etu[0]," a ete pop et a été mis dans le master ", ask)
-                #fichier.write(f"Tas courant : {tas[ask]} Etudiant courant : {list_etu[0]} Master courant : {ask}\n")
-                #breakpoint()\
+                affectation[(int)(etu_courant)]=(int)(ask)
                 break
             
-            #Sinon on doit comparer le dernier etudiant dans la liste du master (sont moins préferer)
+            #Sinon on doit comparer le dernier etudiant dans la liste du master (son moins préféré)
             else:
-                #print("dans else")
-                pos_last_etu=valracine(tas[ask])
+                pos_last_etu=heap.valracine(tas[ask])
                 
                 last_etu=cP[ask][pos_last_etu]
-                #print(len(list_etu))
-                #fichier.write(pos_last_etu,tabPref[ask][etu_courant])
-                if tas[ask]:
-                    #Si le nouvel étudiant a une meilleure position (pris dans la tableau de verification) que l'etudiant pris dans le tas alors on le remplace.
-                    if(tabPref[ask][etu_courant]<pos_last_etu):
-                        #fichier.write(f"Tas courant : {tas[ask]} Master courant : {ask} Etudiant courant : {list_etu[0]} Pire etudiant : {last_etu}\n")
-                        #breakpoint()
-                        #print("on choisis l'etu : ",list_etu[0]," a la place de ",last_etu,"pour le master : ", ask)
-                        pop(tas[ask])
-                        put(tas[ask],tabPref[ask][etu_courant])
-                        
-                        affectation[ask].append(etu_courant)
-                        affectation[ask].remove((int)(last_etu))
-                        #on ajoute dans le tas le nouvel étudiant et on remet l'etudiant déjà choisis dans la liste_etu
-                        suivi[etu_courant]+=1
-                        
-                        q.put((int)(last_etu))
-                        #fichier.write(f"Tas courant : {tas[ask]} Master courant : {ask} Etudiant courant : {list_etu[0]} Pire etudiant : {last_etu}\n")
 
-                        #breakpoint()
-                        break
-                    else:
-                        suivi[etu_courant]+=1
-                        continue
+                #Si le nouvel étudiant a une meilleure position que l'etudiant pris dans le tas alors on le remplace.
+                if(tabPref[ask][etu_courant]<pos_last_etu):
+
+                    heap.pop(tas[ask])
+                    heap.put(tas[ask],tabPref[ask][etu_courant])
+
+                    #on ajoute dans le tas le nouvel étudiant et on remet l'etudiant déjà choisi dans la liste_etu
+                    suivi[etu_courant]+=1
+                    affectation[etu_courant]=(int)(ask)
+                    del affectation[(int)(last_etu)]
+                    q.put((int)(last_etu))
+                    break
+
+                else:
+                    suivi[etu_courant]+=1
+                    continue
 
     return affectation
 
 
-
-def GS_master(cE,cP,capacity,list_master):
-
-    """Tant qu'il existe un Master libre qui n'a pas proposer a tout les étudiants, il choisis le premier étudiant E
-        dans sa liste, si le master n'a pas atteint sa capacite max et que l'étudiant est dans aucun master 
-        alors on prend l'etudiant E. Sinon on doit comparer si l'etudiant prefere sont master actuelle ou le master qui propose.
-        Si il prefere le master courant on remplace le pire master de l'étudiant par le master courant. Sinon E reste dans son master
-
+def GS_master(cE,cP,capacity):
     """
+    Tant qu'il existe un Master libre qui n'a pas proposer a tout les étudiants, il choisis le premier étudiant E
+    dans sa liste, si le master n'a pas atteint sa capacite max et que l'étudiant est dans aucun master 
+    alors on prend l'etudiant E. Sinon on doit comparer si l'etudiant prefere sont master actuelle ou le master qui propose.
+    Si il prefere le master courant on remplace le pire master de l'étudiant par le master courant. Sinon E reste dans son master
+    """
+    is_in=set()
+    
+    #Initialisation list_master
+    list_master=[i for i in range(len(cP))]
+    
     #Initialisation matrice des preferences des etudiants pour chaque master
     tabPref=deepcopy(cE)
     for i in range(len(cE)):
         for j in range(len(cE[0])):
             tabPref[i][(int)(cE[i][j])]=(int)(j)
 
-
     #Initialisation d'une liste des master actuelle pour chaque eleve
     eleve_affect = [-1 for _ in range(len(cE))]
 
     #Tableau d'affectation pour le i-eme master
-    affectation=[[] for _ in range (len(cP))]
+    affectation={}
 
-        #Initialisation de la Queue 
+    #Initialisation de la Queue 
     q = queue.Queue(len(list_master))
-    for etu in list_etu:
-        q.put((int)(etu))
+    for master in list_master:
+        q.put((int)(master))
+        is_in.add(master)
 
     #Initialisation du tableau de suivi
-    suivi=[0 for i in range (len(list_etu))]
-    
-    while(list_master):
-        #print("Affectation des eleves : ",eleve_affect)
-        while((int)(capacity[list_master[0]])>0):
-            #print("Liste de preferences du master : ",list_master[0]," ",cP[list_master[0]])
-            #Si l'eleve est affecter a aucun master on l'affecte au master courant et on retire l'eleve des eleve parcouru
-            if((int)(eleve_affect[(int)((int)(cP[list_master[0]][0]))])==-1):
-                #print("affectation : ",affectation,"Master : ",list_master[0])
-                eleve_affect[(int)(cP[list_master[0]][0])]=list_master[0] #l'eleve est affecter au master list_master[0]
-                
-                #affectation[list_master[0]].append((int)(cP[list_master[0]][0])) #le master rajoute  l'eleve dans sa liste d'affecter
-    
-                affectation[list_master[0]].append((int)(cP[list_master[0]][0]))
+    suivi=[0 for i in range (len(list_master))]
+    ancienmaster=-1
+    while(not q.empty()):
+        
+        master_courant=q.get()
+        is_in.remove(master_courant)
 
-                cP[list_master[0]].pop(0) #on retire l'eleve de la liste des eleves disponible du master
-                #print("Anciene capacite du master : ",list_master[0], " ", capacity[list_master[0]])
-                capacity[list_master[0]]=(int)(capacity[list_master[0]])-1
-                #print("Nouvelle Capacite : ", capacity[list_master[0]])#," Master : ",list_master[0])
+        while((int)(capacity[master_courant])>0 and suivi[master_courant]<len(cP[master_courant])):
+
+            #Si l'eleve est affecter a aucun master on l'affecte au master courant et on retire l'eleve des eleve parcouru
+            if(eleve_affect[(int)(cP[(int)(master_courant)][suivi[master_courant]])]==-1):
+
+                eleve_affect[(int)(cP[master_courant][suivi[master_courant]])]=master_courant #l'eleve est affecter au master master_courant    
+                affectation[(int)(cP[master_courant][suivi[master_courant]])]=master_courant
+                suivi[master_courant]+=1 #on retire l'eleve de la liste des eleves disponible du master
+                capacity[master_courant]=(int)(capacity[master_courant])-1
+
             else:
-                #print("affectation : ",affectation,"Master courant : ",list_master[0],"Ancience master : ",eleve_affect[(int)(cP[list_master[0]][0])])
                 #on compare le master de l'etudiant actuelle avec celui courant et l'etudiant refuse ou non le master courant
-                post_actual_master=tabPref[(int)(cP[list_master[0]][0])][list_master[0]]
-                pos_last_master=tabPref[(int)(cP[list_master[0]][0])][eleve_affect[(int)(cP[list_master[0]][0])]]
-                ancienmaster=eleve_affect[(int)(cP[list_master[0]][0])]
-                #print(ancienmaster)
-                
+                post_actual_master=tabPref[(int)(cP[master_courant][suivi[master_courant]])][master_courant]
+                pos_last_master=tabPref[(int)(cP[master_courant][suivi[master_courant]])][eleve_affect[(int)(cP[master_courant][suivi[master_courant]])]]
+                ancienmaster=eleve_affect[(int)(cP[master_courant][suivi[master_courant]])]
+
                 if(post_actual_master<pos_last_master):
+                    if(not ancienmaster in is_in): 
+
+                        q.put(ancienmaster)
+                        is_in.add(ancienmaster)
 
                     #le master courant est accepter
-                    eleve_affect[(int)(cP[list_master[0]][0])]=list_master[0] #l'eleve est affecter au master courant
-                    capacity[list_master[0]]=(int)(capacity[list_master[0]])-1 #on retire la capacite au master courant
-                    affectation[list_master[0]].append((int)(cP[list_master[0]][0])) # on ajoute a la liste d'affectation du master courant l'etudiant 
-
-                    #affectation[(int)(cP[list_master[0]][0])]=[(int)(cP[list_master[0]][0]),(int)(list_master[0])]
-                    
+                    eleve_affect[(int)(cP[master_courant][suivi[master_courant]])]=(int)(master_courant) #l'eleve est affecter au master courant
+                    capacity[master_courant]=(int)(capacity[master_courant])-1 #on retire la capacite au master courant
+                    affectation[(int)(cP[master_courant][suivi[master_courant]])]=master_courant # on ajoute a la liste d'affectation du master courant l'etudiant 
                     capacity[ancienmaster]=(int)(capacity[ancienmaster])+1 # on remets de la capacite a l'ancien master
-                    list_master.append(ancienmaster)#on ajoute l'ancien master aux master a visiter
+                    suivi[master_courant]+=1
 
-                    affectation[ancienmaster].remove((int)(cP[list_master[0]][0])) #on retire de la liste d'affectation l'eleve qui part
-                    #print("Anciene capacite du master : ",list_master[0], " ", capacity[list_master[0]])
-                    cP[list_master[0]].pop(0)
-                    #print("Capacite : ", capacity[list_master[0]]," Master : ",list_master[0])
-                    #print("Nouvelle Capacite : ", capacity[list_master[0]])#," Master : ",list_master[0])
                 else:
-                    cP[list_master[0]].pop(0) #L'etudiant rejette la proposition du master donc on le retire de la liste du master
-                    #le master courant est refusé
-        list_master.pop(0)
+                    suivi[master_courant]+=1 #L'etudiant rejette la proposition du master donc on le retire de la liste du master
     
     return affectation
 
 
-
-def paires_instables(prefetu,prefspe,capacitespe,affectes):
-    """sq on veut coté etudiant, il va s'agir de comparer les preferences de l'etudiant i
-    aux affectations en parametres. 
-    si son parcours pref disponible dont la capacite est remplie et dont l'etudiant le - 
-    prefere, affecté à ce mm parcours, est - préféré que l'etudiant i -> paire instable
+def paires_instables(prefetu,prefspe,affectes):
+    """
+    Soit l'étudiant i. Si son parcours préféré disponible j dont la capacité est remplie et dont l'étudiant le moins préféré
+    affecté à ce même parcours j, est moins préféré que l'etudiant i, alors (i,j) est une paire instable
     """
     p = [] #tableau de paires instables
 
@@ -297,30 +218,32 @@ def paires_instables(prefetu,prefspe,capacitespe,affectes):
         for j in range(len(prefetu)):
             pos[i][(int)(prefspe[i][j])] = j
 
-    for specourant in range(len(affectes)):
-        for etu in range(len(affectes[specourant])):
-            etucourant = (int)(affectes[(int)(specourant)][(int)(etu)])
-
-            for i in range(len(prefetu[etucourant])):
-                spepref = (int)(prefetu[etucourant][i])
-                if spepref == specourant: #pas une paire instable
+    for specourant in set(affectes.values()): #on parcourt chaque master
+        etu_spe=[etu for etu, master in affectes.items() if master == specourant]
+        for etu in etu_spe: #on parcourt les etudiants affectes dans le master courant 
+            for i in range(len(prefetu[etu])): #on parcourt les masters pref de l'etudiant etucourant
+                spepref = (int)(prefetu[etu][i])
+                if spepref == specourant: #si etucourant a son master pref alors (etucourant,masterpref) n'est pas une paire instable
                     break  
-
-                else:
-                    etucompare = affectes[spepref][0] #etudiant le - préféré pour specourant
-                    for j in range(1, len(affectes[spepref])):
-                        if pos[spepref][affectes[spepref][j]] > pos[spepref][etucompare]:
-                            etucompare = affectes[spepref][j]
-
-                    #si specourant préfère etu à etucompare
-                    if pos[spepref][etucourant] < pos[spepref][etucompare]:
-                        print(spepref," : ",etucourant," est preféré à ", etucompare)
-                        p.append((etucourant, spepref))
+                
+                else: #s'il n'a pas eu son master pref
+                    posmax=-1
+                    for etulast in [etu for etu, master in affectes.items() if master == spepref]: #etudiant le - préféré pour spepref
+                        if(pos[spepref][etulast]>posmax):
+                            etucompare=etulast
+                            posmax=pos[spepref][etulast]
+                    
+                    #si spepref préfère etu à etucompare
+                    if pos[spepref][etu] < pos[spepref][etucompare]:
+                        p.append((etu, spepref))
 
     return p
 
 
 def generate_cE(n,nb_parcours):
+    """
+    Génère une matrice des préférences des n étudiants sur les 9 parcours du master
+    """
     cE=[[] for _ in range(n)]
     for i in range(n):
         for j in range(nb_parcours):
@@ -329,6 +252,9 @@ def generate_cE(n,nb_parcours):
     return cE
 
 def generate_cP(n,nb_parcours):
+    """
+    Génère une matrice des préférences des 9 parcours sur les n étudiants
+    """
     cP=[[] for _ in range(nb_parcours)]
     for i in range(nb_parcours):
         for j in range(n):
@@ -336,54 +262,58 @@ def generate_cP(n,nb_parcours):
             random.shuffle(cP[i])
     return cP
 
+def time_gs():
+    """
+    - Génère des matrices de préférences côté étudiant et côté master pour un nombre d'étudiants n donné
+    - Puis génère un tableau de capacités de n places 
+    - Appelle l'algorithme de Gale-Shapley des deux côtés en calculant leur temps d'exécution respectif
+    - Répète le processus ci-dessus 10 fois avec un n croissant et calcule la moyenne totale
+    - Crée un graphique de la variation du temps d'exécution en fonction du nombre d'étudiants
+    """
+    dix_tests_master = []
+    dix_tests_etu = []
+    
+    for n in range(200,2200,200):
+        cE = generate_cE(n,9)
+        cP = generate_cP(n,9)
+        print("n = ",n)
+        capacites = [random.randint(1, n//2) for _ in range(9)] #capacites entre 1 et n/2 pour equité
+        while sum(capacites) != n:
+            diff = n-sum(capacites)
+            if diff > 0: #on met diff dans une capacite random
+                capacites[random.randint(0, 8)] += diff
+            if diff < 0: #si sum(capacites) > n
+                #on ajt diff(negatif) à une capacite random
+                ind = random.randint(0, 8)
+                capacites[ind] = max(1, capacites[ind] + diff) #max entre 1 pourr eviter des capacités negatives
 
+        capacites2=deepcopy(capacites) #car les fonctions GS modifient directement le tableau initial
+        debut = time.time()
+        affectes_master = GS_master(cE,cP, capacites)
+        fin = time.time()
+        print("coté master : ", fin-debut)
+        dix_tests_master.append(fin-debut)
+        debut = time.time()
+        affectes_etu = GS_etu(cE,cP, capacites2)
+        fin = time.time()
+        dix_tests_etu.append(fin-debut)
+        print("coté etu : ", fin-debut)
 
-dix_tests_master = [0.0 for i in range(10)]
-dix_tests_etu = [0.0 for j in range(10)]
+    print("\n")
+    print("moyenne temps parcours = ", sum(dix_tests_master) / len(dix_tests_master)," secondes")
+    print("moyenne temps etu = ", sum(dix_tests_etu) / len(dix_tests_etu)," secondes")
+    
 
-for n in range(200,2200,200):
-    cE = generate_cE(n,9)
-    cP = generate_cP(n,9)
+    val_n=[n  for n in range(200,2200,200)]
+    plt.figure(figsize=(8,5))
 
-    capacites = [random.randint(1, n//2) for _ in range(9)] #capacites entre 1 et n/2 pour equité
-    while sum(capacites) != n:
-        diff = n-sum(capacites)
-        if diff > 0: #on met diff dans une capacite random
-            capacites[random.randint(0, 8)] += diff
-        if diff < 0: #si sum(capacites) > n
-            #on ajt diff(negatif) à une capacite random
-            ind = random.randint(0, 8)
-            capacites[ind] = max(1, capacites[ind] + diff) #max entre 1 pr eviter les res negatifs
-   
-    print(capacites)
-
-    list_etu = [i for i in range(n)]
-    debut = time.time()
-    affectes = GS_master(cE,cP, capacites,list_etu)
-    fin = time.time()
-    print("coté master : ", fin-debut)
-    dix_tests_master.append(fin-debut)
-    debut = time.time()
-    affectes = GS_etu(cE,cP, capacites)
-    fin = time.time()
-    dix_tests_etu.append(fin-debut)
-    print("coté etu : ", fin-debut)
-
-print("moyenne temps parcours = ", sum(dix_tests_master) / len(dix_tests_master)," secondes")
-print("moyenne etu = ", sum(dix_tests_etu) / len(dix_tests_etu)," secondes")
-
-affect_etu_optimal = GS_etu(studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),capacity_master("PrefSpe.txt"),[0,1,2,3,4,5,6,7,8,9,10])
-affect_master_optimal = GS_master(studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),capacity_master("PrefSpe.txt"),[0,1,2,3,4,5,6,7,8])
-
-
-#print("Affectation master optimal : ",affect_master_optimal)
-print("Affectation Etudiant optimal : ",affect_etu_optimal)
-#print ("Paire instable : ",paires_instables(studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),capacity_master("PrefSpe.txt"),affect_etu_optimal))
-
-#print("Creation cE :  ",generate_cE(10,9))
-#print("Creation cP : ",generate_cP(10,9))
-
-
-#studentpref("PrefEtu.txt")
-#print(masterpref("PrefSpe.txt"))
-
+    plt.plot(val_n,dix_tests_etu,label="Temps_etu",color="blue")
+    plt.plot(val_n,dix_tests_master,label="Temps_master",color="red")
+    plt.xlabel("n")
+    plt.ylabel("Temps d'execution (s)")
+    plt.title("Graphique des temps d'executions de Gale-Shapley")
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.show()
+    return
+    
