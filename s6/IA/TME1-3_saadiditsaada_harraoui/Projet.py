@@ -65,7 +65,6 @@ def capacity_master(file):
     content[1].remove("Cap")
     return(content[1])
 
-
 def GS_etu(cE,cP,capacity):
     """
     Initialisation des étudiants et Master commme libre. Pour chaque master, un tas représentant les élèves
@@ -74,16 +73,16 @@ def GS_etu(cE,cP,capacity):
     La recherche des préferences du master se fera dans le tas et on utilisera le tableau de verification en O(1)
     Retourne un dictionnaire {étudiant : valeur} qui contient pour le i-ème étudiant, son parcours assigné
     """
-    #Initialisation de la liste des etudiants tous libres au départ
-    list_etu=[i for i in range (len(cE))]
+    #Initialisation de la liste des etudiants tous libres au départ O(n)
+    list_etu=[i for i in range (len(cE))] 
 
-    #Initialisation matrice des positions des étudiants dans chaque master
-    tabPref=deepcopy(cP)
+    #Initialisation matrice des positions des étudiants dans chaque master O(n*m)
+    tabPref=[[0]* len(cE) for _ in range(len(cP))]
     for i in range(len(cP)):
         for j in range(len(cP[0])):
             tabPref[i][(int)(cP[i][j])]=(int)(j)
 
-    #Initialisation des tas dans chaque master
+    #Initialisation des tas dans chaque master O(m)
     tas = [[] for _ in range(len(cP))]
 
     #Dictionnaire d'affectation pour le i-eme étudiant
@@ -94,7 +93,7 @@ def GS_etu(cE,cP,capacity):
     for etu in list_etu:
         q.put((int)(etu))
 
-    #Initialisation du tableau de suivi
+    #Initialisation du tableau de suivi en O(n)
     suivi=[0 for i in range (len(list_etu))]
     nb_iter=0
     while(not q.empty()):
@@ -149,8 +148,8 @@ def GS_master(cE,cP,capacity):
     #Initialisation list_master
     list_master=[i for i in range(len(cP))]
     
-    #Initialisation matrice des preferences des etudiants pour chaque master
-    tabPref=deepcopy(cE)
+    #Initialisation matrice des preferences des master pour chaque etudiant
+    tabPref=[[0]*len(cP) for _ in range(len(cE))]
     for i in range(len(cE)):
         for j in range(len(cE[0])):
             tabPref[i][(int)(cE[i][j])]=(int)(j)
@@ -285,7 +284,7 @@ def time_gs():
     tests_master = []
     tests_etu = []
     
-    for n in range(200,2200,50):
+    for n in range(200,2200,200):
         
         print("n = ",n)
        
@@ -303,10 +302,9 @@ def time_gs():
                     # on ajt diff(negatif) à une capacite random
                     ind = random.randint(0, 8)
                     capacites[ind] = max(1, capacites[ind] + diff) # max entre 1 pourr eviter des capacités negatives
-
-
-
-            capacites2=deepcopy(capacites) # car les fonctions GS modifient directement le tableau initial
+                                                    
+                                                            
+            capacites2=[val for val in capacites]   # car les fonctions GS modifient directement le tableau initial
             debut = time.time()
             affectes_master = GS_master(cE,cP, capacites)
             fin = time.time()
@@ -317,8 +315,8 @@ def time_gs():
             val_etu+=(fin-debut)
         val_etu=val_etu/10
         val_master=val_master/10
-        print("coté master : ", val_master)
-        print("coté etu : ", val_etu)
+        # print("coté master : ", val_master)
+        # print("coté etu : ", val_etu)
         tests_master.append(val_master)
         tests_etu.append(val_etu)
         # print("coté etu : ", fin-debut)
@@ -327,27 +325,55 @@ def time_gs():
 
 
 
-    print("\n")
-    print("moyenne temps parcours = ", sum(tests_master) / len(tests_master)," secondes")
-    print("moyenne temps etu = ", sum(tests_etu) / len(tests_etu)," secondes")
+    # print("\n")
+    # print("moyenne temps parcours = ", sum(tests_master) / len(tests_master)," secondes")
+    # print("moyenne temps etu = ", sum(tests_etu) / len(tests_etu)," secondes")
     
-
-    val_n=[n  for n in range(200,2200,200)]
-    plt.figure(figsize=(8,5))
-
-    plt.plot(val_n,np.sqrt(tests_etu),label="Temps_etu",color="blue")
-    plt.plot(val_n,np.sqrt(tests_master),label="Temps_master",color="red")
+    val_n = [n for n in range(200, 2200, 200)]
+    # 1. Graphique avec sqrt
+    plt.figure(figsize=(8, 5))
+    plt.plot(val_n, np.sqrt(tests_etu), label="Temps_etu (racine)", color="blue")
+    plt.plot(val_n, np.sqrt(tests_master), label="Temps_master (racine)", color="red")
     plt.xlabel("n")
     plt.ylabel("Temps d'execution (s)")
-    plt.title("Graphique des temps d'executions de Gale-Shapley")
+    plt.title("Graphique des temps d'execution de Gale-Shapley (racine)")
     plt.legend()
-    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.grid(True, linestyle="--", alpha=0.6)
     plt.show()
-    return
+
+    # 2. Graphique avec log
+    plt.figure(figsize=(8, 5))
+    plt.plot(val_n, np.log(tests_etu), label="Temps_etu (log)", color="blue")
+    plt.plot(val_n, np.log(tests_master), label="Temps_master (log)", color="red")
+    plt.xlabel("n")
+    plt.ylabel("Temps d'execution (s) (log)")
+    plt.title("Graphique des temps d'execution de Gale-Shapley (log)")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.show()
+
+    # 3. Graphique avec les valeurs normales
+    plt.figure(figsize=(8, 5))
+    plt.plot(val_n, tests_etu, label="Temps_etu", color="blue")
+    plt.plot(val_n, tests_master, label="Temps_master", color="red")
+    plt.xlabel("n")
+    plt.ylabel("Temps d'execution (s)")
+    plt.title("Graphique des temps d'execution de Gale-Shapley (Valeurs Normales)")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.show()
+    return val_n,tests_etu,tests_master
     
 
-
 def it_gs():
+    """
+    - Génère des matrices de préférences côté étudiant et côté master pour un nombre d'étudiants n donné
+    - Puis génère un tableau de capacités de n places 
+    - Appelle l'algorithme de Gale-Shapley des deux côtés en calculant leur temps d'exécution respectif
+    - Répète le processus ci-dessus 10 fois avec un n croissant et calcule la moyenne totale
+    - Crée un graphique de la variation du nombre d'iteration en fonction du nombre d'étudiants
+    """
+
     tests_master = []
     tests_etu = []
     
@@ -372,7 +398,7 @@ def it_gs():
 
 
 
-            capacites2=deepcopy(capacites) # car les fonctions GS modifient directement le tableau initial
+            capacites2=[val for val in capacites]   # car les fonctions GS modifient directement le tableau initial
             affectes_master,nb_itemaster = GS_master(cE,cP, capacites)
             
             val_master+=(nb_itemaster)
@@ -386,9 +412,9 @@ def it_gs():
         tests_etu.append(val_etu)
 
 
-    print("\n")
-    print("moyenne nb_ite parcours = ", sum(tests_master) / len(tests_master)," secondes")
-    print("moyenne nb_ite etu = ", sum(tests_etu) / len(tests_etu)," secondes")
+    # print("\n")
+    # print("moyenne nb_ite parcours = ", sum(tests_master) / len(tests_master)," secondes")
+    # print("moyenne nb_ite etu = ", sum(tests_etu) / len(tests_etu)," secondes")
     
 
     val_n=[n  for n in range(200,2200,200)]
@@ -402,106 +428,25 @@ def it_gs():
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.show()
-    return
+    return val_n,tests_etu,tests_master
 
+def analyse_sol(affectations,borda_etu,borda_parcours):
+    """Renvoie la liste des paires instable,l'utilite en moyenne, et l'utilite minimale pour une affectations."""
+    stable=paires_instables(studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),affectations)
 
-def PL_resolve_1(k,cE,cP,capacity):
+    total_uti_etu=0
+    total_uti_parcours=0
+    list_uti_etu=[]
+    for etu,parcours in affectations.items():
+        total_uti_etu+=borda_etu[etu][parcours] 
+        total_uti_parcours+=borda_parcours[parcours][etu]
+        list_uti_etu.append(borda_etu[etu][parcours])
 
+    total_uti=total_uti_etu+total_uti_parcours #Calculer la somme totale des utilités
 
-    try:
-        
-        n=len(cE) #nombre etudiant
-        d=len(cP) #nombre de parcours
-        
-    
-        # Create a new model
-        m = gp.Model("AllocationEtudiant")
+    utilite_moyenne=total_uti/len(borda_etu) #Utilite moyenne
 
-        # Create variables
-        x = m.addVars(n,d,vtype=GRB.BINARY, name="x")
-        
+    utilite_minimale=min(list_uti_etu) #Utilite minimale
 
-        # Fonction objective : maximiser le nombre d'affectations 
-        m.setObjective(gp.quicksum(x[i,j] for (i,j) in x), GRB.MAXIMIZE)
+    return stable,utilite_moyenne,utilite_minimale
 
-        # Contrainte 1 : Chaque étudiant est assigné a au plus 1 parcours
-        for i in range(n):
-            m.addConstr(gp.quicksum(x[i,j] for j in range(d))<=1,f"assigne_{i}")
-
-        #Contrainte 2 : Respect des capacités des parcours
-        for j in range(d):
-            m.addConstr(gp.quicksum(x[i,j] for i in range(n))<=(int)(capacity[j]),f"capacite_{j}")
-
-        #Contrainte 3 : Chaque etudiant doit être assigné a un de ses k premieres préférences
-        for i in range(n):
-            m.addConstr(gp.quicksum(x[i,j] for j in ([(int)(valeur) for valeur in cE[i][:k]]))==1,f"preference_{i}")
-        
-        #ecriture dans un fichier lp
-        m.write("AllocationEtudiant.lp")
-        # Optimize model
-        m.optimize()
-
-        with open("AllocationEtudiant.txt","w") as f:
-            if m.status == GRB.OPTIMAL:
-                f.write("Solution trouvée :\n")
-                for i in range(n):
-                    for j in range(d):
-                        if x[i, j].x > 0.5:
-                            f.write(f"Étudiant {i} affecté au parcours {j}\n")
-
-
-    except gp.GurobiError as e:
-        print(f"Error code {e.errno}: {e}")
-
-    except AttributeError:
-        print("Encountered an attribute error")
-
-def PL_resolve_2(k,cE,cP,capacity):
-
-    try:
-        n=len(cE) #nombre etudiant
-        d=len(cP) #nombre de parcours
-        
-    
-        # Create a new model
-        m = gp.Model("AllocationEtudiant")
-
-        # Create variables
-        x = m.addVars(n,d,vtype=GRB.BINARY, name="x")
-        # Fonction objective : maximiser le nombre d'affectations 
-        m.setObjective(gp.quicksum(x[i,j] for (i,j) in x), GRB.MINIMIZE)
-
-        # Contrainte 1 : Chaque étudiant est assigné a au plus 1 parcours
-        for i in range(n):
-            m.addConstr(gp.quicksum(x[i,j] for j in range(d))<=1,f"assigne_{i}")
-
-        #Contrainte 2 : Respect des capacités des parcours
-        for j in range(d):
-            m.addConstr(gp.quicksum(x[i,j] for i in range(n))<=(int)(capacity[j]),f"capacite_{j}")
-
-        #Contrainte 3 : Chaque etudiant doit être assigné a un de ses k premieres préférences
-        for i in range(n):
-            m.addConstr(gp.quicksum(x[i,j] for j in ([(int)(valeur) for valeur in cE[i][:k]]))==1,f"preference_{i}")
-        
-        #ecriture dans un fichier lp
-        m.write("AllocationEtudiant.lp")
-        # Optimize model
-        m.optimize()
-
-        with open("AllocationEtudiant.txt","w") as f:
-            if m.status == GRB.OPTIMAL:
-                f.write("Solution trouvée :\n")
-                for i in range(n):
-                    for j in range(d):
-                        if x[i, j].x > 0.5:
-                            f.write(f"Étudiant {i} affecté au parcours {j}\n")
-
-
-    except gp.GurobiError as e:
-        print(f"Error code {e.errno}: {e}")
-
-    except AttributeError:
-        print("Encountered an attribute error")
-
-
-PL_resolve_1(5,studentpref("PrefEtu.txt"),masterpref("PrefSpe.txt"),capacity_master("PrefSpe.txt"))

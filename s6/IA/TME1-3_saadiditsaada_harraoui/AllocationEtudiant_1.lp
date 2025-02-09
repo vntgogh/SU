@@ -1,4 +1,4 @@
-\ Model AllocationEtudiant
+\ Model AllocationEtudiant_1
 \ LP format - for model browsing. Use MPS format to capture full model detail.
 Maximize
   x[0,0] + x[0,1] + x[0,2] + x[0,3] + x[0,4] + x[0,5] + x[0,6] + x[0,7]
