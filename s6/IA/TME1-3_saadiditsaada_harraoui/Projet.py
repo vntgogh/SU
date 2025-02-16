@@ -143,6 +143,12 @@ def GS_master(cE,cP,capacity):
     dans sa liste, si le master n'a pas atteint sa capacite max et que l'étudiant est dans aucun master 
     alors on prend l'etudiant E. Sinon on doit comparer si l'etudiant prefere sont master actuelle ou le master qui propose.
     Si il prefere le master courant on remplace le pire master de l'étudiant par le master courant. Sinon E reste dans son master
+    
+    tabPref : matrice des positions
+    eleve_affect : master de chaque etudiant
+    is_in : verifie si un master est encore dans la liste d'attente
+    q : liste d'attente des masters
+    suivi : nombre de propositions de chaque etudiant
     """
 
     #Initialisation list_master
