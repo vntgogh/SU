@@ -59,7 +59,8 @@ class Classifier:
         for i in range(len(label_set)):
             if self.predict(desc_set[i]) == label_set[i]:
                 cpt += 1
-
+        if len(label_set) == 0: 
+            return 0.0
         return cpt / len(label_set)
 
 # ---------------------------
