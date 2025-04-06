@@ -322,3 +322,45 @@ class ClassifierMultiOAA(Classifier):
         y_pred = np.array([self.predict(x) for x in desc_set])
         return np.mean(y_pred == label_set)
 # ------------------------ 
+
+
+def classe_majoritaire(Y):
+    """ Y : (array) : array de labels
+        rend la classe majoritaire ()
+    """
+    #### A compléter pour répondre à la question posée
+    _, freq = np.unique(Y, return_counts=True)
+    
+    max = np.argmax(freq)
+    
+    return Y[max] #classe de la freq max
+
+def shannon(P):
+    """ list[Number] -> float
+        Hypothèse: P est une distribution de probabilités
+        - P: distribution de probabilités
+        rend la valeur de l'entropie de Shannon correspondante
+    """
+    ########################## COMPLETER ICI 
+    
+    k = len(P) #nb de classes
+    
+    if k == 1:
+        return 0.0
+    
+    entropy = 0
+    for p_i in P:
+        if p_i > 0:  
+            entropy -= p_i * np.log(p_i) / np.log(k)  #log_k(p_i)
+    
+    return entropy
+
+def entropie(Y):
+    """ Y : (array) : ensemble de labels de classe
+        rend l'entropie de l'ensemble Y
+    """
+    ########################## COMPLETER ICI 
+    _, counts = np.unique(Y, return_counts=True)
+    probabilities = counts / len(Y)
+    return shannon(probabilities)
+    ##########################
