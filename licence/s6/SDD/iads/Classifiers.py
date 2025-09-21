@@ -1,0 +1,734 @@
+# -*- coding: utf-8 -*-
+
+"""
+Package: iads
+File: Classifiers.py
+Année: LU3IN026 - semestre 2 - 2024-2025, Sorbonne Université
+"""
+
+# Classfieurs implémentés en LU3IN026
+# Version de départ : Février 2025
+
+# Import de packages externes
+import numpy as np
+import pandas as pd
+import copy
+import random 
+# ---------------------------
+
+# ------------------------ A COMPLETER :
+class Classifier:
+    """ Classe (abstraite) pour représenter un classifieur
+        Attention: cette classe est ne doit pas être instanciée.
+    """
+    
+    def __init__(self, input_dimension):
+        """ Constructeur de Classifier
+            Argument:
+                - intput_dimension (int) : dimension de la description des exemples
+            Hypothèse : input_dimension > 0
+        """
+        self.dimension = input_dimension
+        
+    def train(self, desc_set, label_set):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        raise NotImplementedError("Please Implement this method")
+    
+    def score(self,x):
+        """ rend le score de prédiction sur x (valeur réelle)
+            x: une description
+        """
+        raise NotImplementedError("Please Implement this method")
+    
+    def predict(self, x):
+        """ rend la prediction sur x (soit -1 ou soit +1)
+            x: une description
+        """
+        raise NotImplementedError("Please Implement this method")
+
+    def accuracy(self, desc_set, label_set):
+        """ Permet de calculer la qualité du système sur un dataset donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """
+        cpt = 0
+        for i in range(len(label_set)):
+            if self.predict(desc_set[i]) == label_set[i]:
+                cpt += 1
+        if len(label_set) == 0: 
+            return 0.0
+        return cpt / len(label_set)
+
+# ---------------------------
+
+# ------------------------ A COMPLETER :
+
+class ClassifierKNN(Classifier):
+    """ Classe pour représenter un classifieur par K plus proches voisins.
+        Cette classe hérite de la classe Classifier
+    """
+
+    # ATTENTION : il faut compléter cette classe avant de l'utiliser !
+    
+    def __init__(self, input_dimension, k):
+        """ Constructeur de Classifier
+            Argument:
+                - intput_dimension (int) : dimension d'entrée des exemples
+                - k (int) : nombre de voisins à considérer
+            Hypothèse : input_dimension > 0
+        """
+        Classifier.__init__(self,input_dimension)
+        self.k = k
+        self.desc_set = None
+        self.label_set = None
+
+        
+    def score(self,x):
+        """ rend la proportion de +1 parmi les k ppv de x (valeur réelle)
+            x: une description : un ndarray
+        """
+        distances = np.linalg.norm(self.desc_set - x, axis=1) #vecteur des distances entre x et tous les pts de desc_set
+        dist = np.argsort(distances)
+        kppv = self.label_set[dist[:self.k]] #k plus proches
+        proportion_1 = np.sum(kppv == 1) / self.k #proportion de +1
+        if proportion_1 == 0.5 :
+            return 0
+        else:
+            return 2*(proportion_1-0.5)
+    
+    def predict(self, x):
+        """ rend la prediction sur x (-1 ou +1)
+            x: une description : un ndarray
+        """
+        if self.score(x) > 0 :
+            return 1
+        return -1
+
+
+    def train(self, desc_set, label_set):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        self.desc_set = desc_set
+        self.label_set = label_set  
+
+# ---------------------------
+
+class ClassifierLineaireRandom(Classifier):
+    """ Classe pour représenter un classifieur linéaire aléatoire
+        Cette classe hérite de la classe Classifier
+    """
+    
+    def __init__(self, input_dimension):
+        """ Constructeur de Classifier
+            Argument:
+                - intput_dimension (int) : dimension de la description des exemples
+            Hypothèse : input_dimension > 0
+        """
+        Classifier.__init__(self,input_dimension)
+        v = np.random.uniform(-1, 1, input_dimension)
+        self.w = v / np.linalg.norm(v)        
+
+    def train(self, desc_set, label_set):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        print("Pas d'apprentissage pour ce classifieur")
+
+    def score(self,x):
+        """ rend le score de prédiction sur x (valeur réelle)
+            x: une description
+        """
+        return np.dot(x, self.w)
+    
+    def predict(self, x):
+        """ rend la prediction sur x (soit -1 ou soit +1)
+            x: une description
+        """
+        if self.score(x) > 0:
+            return 1
+        return -1    
+
+# ---------------------------
+
+class ClassifierPerceptron(Classifier):
+    """ Perceptron de Rosenblatt
+    """
+    def __init__(self, input_dimension, learning_rate=0.01, init=True ):
+        """ Constructeur de Classifier
+            Argument:
+                - input_dimension (int) : dimension de la description des exemples (>0)
+                - learning_rate (par défaut 0.01): epsilon
+                - init est le mode d'initialisation de w: 
+                    - si True (par défaut): initialisation à 0 de w,
+                    - si False : initialisation par tirage aléatoire de valeurs petites
+        """
+        Classifier.__init__(self,input_dimension)
+        self.lr = learning_rate
+
+        if init:
+            self.w = np.zeros(input_dimension)
+        else:
+            self.w = np.array([(2 * np.random.uniform(0, 1) - 1) * 0.001 for _ in range(input_dimension)])
+        
+        self.allw = [self.w.copy()]
+        
+    def train_step(self, desc_set, label_set):
+        """ Réalise une unique itération sur tous les exemples du dataset
+            donné en prenant les exemples aléatoirement.
+            Arguments:
+                - desc_set: ndarray avec des descriptions
+                - label_set: ndarray avec les labels correspondants
+        """      
+        indices = np.arange(len(desc_set))
+        np.random.shuffle(indices)
+        
+        for i in indices:
+            x = desc_set[i]
+            y = label_set[i]
+            prediction = np.dot(x, self.w)
+            
+            if y * prediction <= 0:
+                self.w += self.lr * y * x
+        
+    def train(self, desc_set, label_set, nb_max=100, seuil=0.001):
+        """ Apprentissage itératif du perceptron sur le dataset donné.
+            Arguments:
+                - desc_set: ndarray avec des descriptions
+                - label_set: ndarray avec les labels correspondants
+                - nb_max (par défaut: 100) : nombre d'itérations maximale
+                - seuil (par défaut: 0.001) : seuil de convergence
+            Retour: la fonction rend une liste
+                - liste des valeurs de norme de différences
+        """
+        differences = []
+        previous_w = self.w.copy()
+        
+        for _ in range(nb_max):
+            self.train_step(desc_set, label_set)
+            diff = np.linalg.norm(self.w - previous_w)
+            differences.append(diff)
+            
+            if diff < seuil:
+                break
+            previous_w = self.w.copy()
+        
+        return differences
+    
+    def score(self,x):
+        """ rend le score de prédiction sur x (valeur réelle)
+            x: une description
+        """
+        return np.dot(self.w, x)
+    
+    def predict(self, x):
+        """ rend la prediction sur x (soit -1 ou soit +1)
+            x: une description
+        """
+        return 1 if self.score(x) >= 0 else -1
+
+    def get_allw(self):
+        """ Retourne la liste de tous les poids successifs """
+        return self.allw
+
+# ---------------------------
+
+class ClassifierPerceptronBiais(ClassifierPerceptron):
+    """ Perceptron de Rosenblatt avec biais
+        Variante du perceptron de base
+    """
+    def __init__(self, input_dimension, learning_rate=0.01, init=True):
+        """ Constructeur de Classifier
+            Argument:
+                - input_dimension (int) : dimension de la description des exemples (>0)
+                - learning_rate (par défaut 0.01): epsilon
+                - init est le mode d'initialisation de w: 
+                    - si True (par défaut): initialisation à 0 de w,
+                    - si False : initialisation par tirage aléatoire de valeurs petites
+        """
+        # Appel du constructeur de la classe mère
+        super().__init__(input_dimension, learning_rate, init)
+        # Affichage pour information (décommentez pour la mise au point)
+        print("Init perceptron biais: w= ",self.w," learning rate= ",learning_rate)
+        
+    def train_step(self, desc_set, label_set):
+        """ Réalise une unique itération sur tous les exemples du dataset
+            donné en prenant les exemples aléatoirement.
+            Arguments:
+                - desc_set: ndarray avec des descriptions
+                - label_set: ndarray avec les labels correspondants
+        """  
+        indices = np.arange(len(desc_set))
+        np.random.shuffle(indices)
+        
+        for i in indices:
+            x = desc_set[i]
+            y = label_set[i]
+            prediction = np.dot(x, self.w)
+            
+            if y * prediction <= 0:
+                self.w += self.lr * y * x
+                self.allw.append(self.w.copy())
+# ------------------------ 
+
+
+class ClassifierMultiOAA(Classifier):
+    """ Classifieur multi-classes
+    """
+    def __init__(self, cl_bin, input_dimension):
+        """ Constructeur de Classifier
+            Argument:
+                - input_dimension (int) : dimension de la description des exemples (espace originel)
+                - cl_bin: classifieur binaire positif/négatif
+            Hypothèse : input_dimension > 0
+        """
+        self.input_dimension = input_dimension
+        self.classifiers = [copy.deepcopy(cl_bin) for _ in range(input_dimension)]        
+        
+        
+    def train(self, desc_set, label_set):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            réalise une itération sur l'ensemble des données prises aléatoirement
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        for i in range(self.input_dimension):
+            y_tmp = np.where(label_set == i, 1, -1)  
+            self.classifiers[i].train(desc_set, y_tmp)        
+    
+    def score(self,x):
+        """ rend le score de prédiction sur x (valeur réelle)
+            x: une description
+        """
+        return np.array([clf.score(x) for clf in self.classifiers])
+        
+    def predict(self, x):
+        """ rend la prediction sur x (soit -1 ou soit +1)
+            x: une description
+        """
+        return np.argmax(self.score(x))
+    
+    def accuracy(self, desc_set, label_set):
+        y_pred = np.array([self.predict(x) for x in desc_set])
+        return np.mean(y_pred == label_set)
+    
+# ------------------------ 
+
+
+class ClassifierArbreNumerique(Classifier):
+    """ Classe pour représenter un classifieur par arbre de décision numérique
+    """
+    
+    def __init__(self, input_dimension, epsilon, LNoms=[]):
+        """ Constructeur
+            Argument:
+                - intput_dimension (int) : dimension de la description des exemples
+                - epsilon (float) : paramètre de l'algorithme (cf. explications précédentes)
+                - LNoms : Liste des noms de dimensions (si connues)
+            Hypothèse : input_dimension > 0
+        """
+        self.dimension = input_dimension
+        self.epsilon = epsilon
+        self.LNoms = LNoms
+        # l'arbre est manipulé par sa racine qui sera un Noeud
+        self.racine = None
+        
+    def toString(self):
+        """  -> str
+            rend le nom du classifieur avec ses paramètres
+        """
+        return 'ClassifierArbreDecision ['+str(self.dimension) + '] eps='+str(self.epsilon)
+        
+    def train(self, desc_set, label_set):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        self.racine = construit_AD_num(desc_set,label_set,self.epsilon,self.LNoms)
+    
+    def score(self,x):
+        """ rend le score de prédiction sur x (valeur réelle)
+            x: une description
+        """
+        # cette méthode ne fait rien dans notre implémentation :
+        pass
+    
+    def predict(self, x):
+        """ x (array): une description d'exemple
+            rend la prediction sur x             
+        """
+        return self.racine.classifie(x)
+
+    def accuracy(self, desc_set, label_set):  # Version propre à aux arbres
+        """ Permet de calculer la qualité du système sur un dataset donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """
+        nb_ok=0
+        for i in range(desc_set.shape[0]):
+            if self.predict(desc_set[i,:]) == label_set[i]:
+                nb_ok=nb_ok+1
+        acc=nb_ok/(desc_set.shape[0] * 1.0)
+        return acc
+
+    def number_leaves(self):
+        """ rend le nombre de feuilles de l'arbre
+        """
+        return self.racine.compte_feuilles()
+    
+    def affiche(self,GTree):
+        """ affichage de l'arbre sous forme graphique
+            Cette fonction modifie GTree par effet de bord
+        """
+        self.racine.to_graph(GTree)
+# ---------------------------
+
+
+def classe_majoritaire(Y):
+    """ Y : (array) : array de labels
+        rend la classe majoritaire ()
+    """
+    #### A compléter pour répondre à la question posée
+    classes, freq = np.unique(Y, return_counts=True)
+    
+    max = np.argmax(freq)
+    
+    return Y[max] #classe de la freq max
+
+def shannon(P):
+    """ list[Number] -> float
+        Hypothèse: P est une distribution de probabilités
+        - P: distribution de probabilités
+        rend la valeur de l'entropie de Shannon correspondante
+    """
+    ########################## COMPLETER ICI 
+    
+    k = len(P) #nb de classes
+    
+    if k == 1:
+        return 0.0
+    
+    entropy = 0
+    for p_i in P:
+        if p_i > 0:  
+            entropy -= p_i * np.log(p_i) / np.log(k)  #log_k(p_i)
+    
+    return entropy
+
+def entropie(Y):
+    """ Y : (array) : ensemble de labels de classe
+        rend l'entropie de l'ensemble Y
+    """
+    ########################## COMPLETER ICI 
+    _, counts = np.unique(Y, return_counts=True)
+    probabilities = counts / len(Y)
+    return shannon(probabilities)
+    ##########################
+
+
+#-------------------------------------------
+#pour classifierArbreNumerique
+
+def discretise(m_desc, m_class, num_col):
+    """ input:
+            - m_desc : (np.array) matrice des descriptions toutes numériques
+            - m_class : (np.array) matrice des classes (correspondant à m_desc)
+            - num_col : (int) numéro de colonne de m_desc à considérer
+            - nb_classes : (int) nombre initial de labels dans le dataset (défaut: 2)
+        output: tuple : ((seuil_trouve, entropie), (liste_coupures,liste_entropies))
+            -> seuil_trouve (float): meilleur seuil trouvé
+            -> entropie (float): entropie du seuil trouvé (celle qui minimise)
+            -> liste_coupures (List[float]): la liste des valeurs seuils qui ont été regardées
+            -> liste_entropies (List[float]): la liste des entropies correspondantes aux seuils regardés
+            (les 2 listes correspondent et sont donc de même taille)
+            REMARQUE: dans le cas où il y a moins de 2 valeurs d'attribut dans m_desc, aucune discrétisation
+            n'est possible, on rend donc ((None , +Inf), ([],[])) dans ce cas            
+    """
+    # Liste triée des valeurs différentes présentes dans m_desc:
+    l_valeurs = np.unique(m_desc[:,num_col])
+    
+    # Si on a moins de 2 valeurs, pas la peine de discrétiser:
+    if (len(l_valeurs) < 2):
+        return ((None, float('Inf')), ([],[]))
+    
+    # Initialisation
+    best_seuil = None
+    best_entropie = float('Inf')
+    
+    # pour voir ce qui se passe, on va sauver les entropies trouvées et les points de coupures:
+    liste_entropies = []
+    liste_coupures = []
+    
+    nb_exemples = len(m_class)
+    
+    for v in l_valeurs:
+        cl_inf = m_class[m_desc[:,num_col]<=v]
+        cl_sup = m_class[m_desc[:,num_col]>v]
+        nb_inf = len(cl_inf)
+        nb_sup = len(cl_sup)
+        
+        # calcul de l'entropie de la coupure
+        val_entropie_inf = entropie(cl_inf) # entropie de l'ensemble des inf
+        val_entropie_sup = entropie(cl_sup) # entropie de l'ensemble des sup
+        
+        val_entropie = (nb_inf / float(nb_exemples)) * val_entropie_inf \
+                       + (nb_sup / float(nb_exemples)) * val_entropie_sup
+        
+        # Ajout de la valeur trouvée pour retourner l'ensemble des entropies trouvées:
+        liste_coupures.append(v)
+        liste_entropies.append(val_entropie)
+        
+        # si cette coupure minimise l'entropie, on mémorise ce seuil et son entropie:
+        if (best_entropie > val_entropie):
+            best_entropie = val_entropie
+            best_seuil = v
+    
+    return (best_seuil, best_entropie), (liste_coupures,liste_entropies)
+
+def partitionne(m_desc,m_class,n,s):
+    """ input:
+            - m_desc : (np.array) matrice des descriptions toutes numériques
+            - m_class : (np.array) matrice des classes (correspondant à m_desc)
+            - n : (int) numéro de colonne de m_desc
+            - s : (float) seuil pour le critère d'arrêt
+        Hypothèse: m_desc peut être partitionné ! (il contient au moins 2 valeurs différentes)
+        output: un tuple composé de 2 tuples
+    """
+    return ((m_desc[m_desc[:,n]<=s], m_class[m_desc[:,n]<=s]), \
+            (m_desc[m_desc[:,n]>s], m_class[m_desc[:,n]>s]))
+
+import graphviz as gv   # si ce n'a pas déjà été fait...
+
+class NoeudNumerique:
+    """ Classe pour représenter des noeuds numériques d'un arbre de décision
+    """
+    def __init__(self, num_att=-1, nom=''):
+        """ Constructeur: il prend en argument
+            - num_att (int) : le numéro de l'attribut auquel il se rapporte: de 0 à ...
+              si le noeud se rapporte à la classe, le numéro est -1, on n'a pas besoin
+              de le préciser
+            - nom (str) : une chaîne de caractères donnant le nom de l'attribut si
+              il est connu (sinon, on ne met rien et le nom sera donné de façon 
+              générique: "att_Numéro")
+        """
+        self.attribut = num_att    # numéro de l'attribut
+        if (nom == ''):            # son nom si connu
+            self.nom_attribut = 'att_'+str(num_att)
+        else:
+            self.nom_attribut = nom 
+        self.seuil = None          # seuil de coupure pour ce noeud
+        self.Les_fils = None       # aucun fils à la création, ils seront ajoutés
+        self.classe   = None       # valeur de la classe si c'est une feuille
+        
+    def est_feuille(self):
+        """ rend True si l'arbre est une feuille 
+            c'est une feuille s'il n'a aucun fils
+        """
+        return self.Les_fils == None
+    
+    def ajoute_fils(self, val_seuil, fils_inf, fils_sup):
+        """ val_seuil : valeur du seuil de coupure
+            fils_inf : fils à atteindre pour les valeurs inférieures ou égales à seuil
+            fils_sup : fils à atteindre pour les valeurs supérieures à seuil
+        """
+        if self.Les_fils == None:
+            self.Les_fils = dict()            
+        self.seuil = val_seuil
+        self.Les_fils['inf'] = fils_inf
+        self.Les_fils['sup'] = fils_sup        
+    
+    def ajoute_feuille(self,classe):
+        """ classe: valeur de la classe
+            Ce noeud devient un noeud feuille
+        """
+        self.classe    = classe
+        self.Les_fils  = None   # normalement, pas obligatoire ici, c'est pour être sûr
+        
+    def classifie(self, exemple):
+        """ exemple : numpy.array
+            rend la classe de l'exemple (pour nous, soit +1, soit -1 en général)
+            on rend la valeur 0 si l'exemple ne peut pas être classé (cf. les questions
+            posées en fin de ce notebook)
+        """
+        #############
+        # COMPLETER CETTE PARTIE   
+        if self.est_feuille():
+            return self.classe
+    
+        if exemple[self.attribut] <= self.seuil:
+            return self.Les_fils['inf'].classifie(exemple)
+        else:
+            return self.Les_fils['sup'].classifie(exemple)
+        #############
+
+    
+    def compte_feuilles(self):
+        """ rend le nombre de feuilles sous ce noeud
+        """
+        #############
+        # COMPLETER CETTE PARTIE AUSSI
+        if self.est_feuille():
+            return 1
+        
+        nbg = self.Les_fils['inf'].compte_feuilles() #sous arbre gauche
+        nbd = self.Les_fils['sup'].compte_feuilles() #sous arbre droit
+        return nbg + nbd
+        #############
+     
+    def to_graph(self, g, prefixe='A'):
+        """ construit une représentation de l'arbre pour pouvoir l'afficher graphiquement
+            Cette fonction ne nous intéressera pas plus que ça, elle ne sera donc 
+            pas expliquée            
+        """
+        if self.est_feuille():
+            g.node(prefixe,str(self.classe),shape='box')
+        else:
+            g.node(prefixe, str(self.nom_attribut))
+            self.Les_fils['inf'].to_graph(g,prefixe+"g")
+            self.Les_fils['sup'].to_graph(g,prefixe+"d")
+            g.edge(prefixe,prefixe+"g", '<='+ str(self.seuil))
+            g.edge(prefixe,prefixe+"d", '>'+ str(self.seuil))                
+        return g
+
+
+def construit_AD_num(X,Y,epsilon,LNoms = []):
+    """ X,Y : dataset
+        epsilon : seuil d'entropie pour le critère d'arrêt 
+        LNoms : liste des noms de features (colonnes) de description 
+    """
+    
+    # dimensions de X:
+    (nb_lig, nb_col) = X.shape
+    
+    entropie_classe = entropie(Y)
+    
+    if (entropie_classe <= epsilon) or  (nb_lig <=1):
+        # ARRET : on crée une feuille
+        noeud = NoeudNumerique(-1,"Label")
+        noeud.ajoute_feuille(classe_majoritaire(Y))
+    else:
+        gain_max = 0.0  # meilleur gain trouvé (initalisé à 0.0 => aucun gain)
+        i_best = -1     # numéro du meilleur attribut (init à -1 (aucun))
+        
+        #############
+        
+        # COMPLETER CETTE PARTIE : ELLE DOIT PERMETTRE D'OBTENIR DANS
+        # i_best : le numéro de l'attribut qui maximise le gain d'information.  En cas d'égalité,
+        #          le premier rencontré est choisi.
+        # gain_max : la plus grande valeur de gain d'information trouvée.
+        # Xbest_tuple : le tuple rendu par partionne() pour le meilleur attribut trouvé
+        # Xbest_seuil : le seuil de partitionnement associé au meilleur attribut
+        #
+        # Remarque : attention, la fonction discretise() peut renvoyer un tuple contenant
+        # None (pas de partitionnement possible)n dans ce cas, on considèrera que le
+        # résultat d'un partitionnement est alors ((X,Y),(None,None))
+        
+        Xbest_tuple = None  
+        Xbest_seuil = None  # seuil de coupure 
+        
+        for i in range(nb_col):
+            (seuil_tuple, _) = discretise(X, Y, i)
+            best_seuil, best_entropy = seuil_tuple
+            #aucun seuil trouvé
+            if best_seuil is None:
+                continue
+            gain = entropie_classe - best_entropy
+            if gain > gain_max:
+                gain_max = gain
+                i_best = i
+                Xbest_seuil = best_seuil
+                Xbest_tuple = partitionne(X, Y, i, best_seuil)
+        
+
+        ############
+        if (i_best != -1): # Un attribut qui amène un gain d'information >0 a été trouvé
+            if len(LNoms)>0:  # si on a des noms de features
+                noeud = NoeudNumerique(i_best,LNoms[i_best]) 
+            else:
+                noeud = NoeudNumerique(i_best)
+            ((left_data,left_class), (right_data,right_class)) = Xbest_tuple
+            noeud.ajoute_fils( Xbest_seuil, \
+                              construit_AD_num(left_data,left_class, epsilon, LNoms), \
+                              construit_AD_num(right_data,right_class, epsilon, LNoms) )
+        else: # aucun attribut n'a pu améliorer le gain d'information
+              # ARRET : on crée une feuille
+            noeud = NoeudNumerique(-1,"Label")
+            noeud.ajoute_feuille(classe_majoritaire(Y))
+        
+    return noeud
+
+#-------------------------------------------
+def tirage(VX, m, avecRemise=False):
+    """ VX: vecteur d'indices 
+        m : nombre d'exemples à sélectionner (hypothèse: m <= len(VX))
+        avecRemise: booléen, true si avec remise, ou faux sinon
+    """
+    if avecRemise:
+        return [random.choice(VX) for _ in range(m)]
+    else:
+        return random.sample(VX, m)
+    
+def echantillonLS(LS,m,avecRemise):
+    """ LS: LabeledSet (couple de np.arrays)
+        m : entier donnant la taille de l'échantillon voulu (hypothèse: m <= len(LS))
+        avecRemise: booléen pour le mode de tirage
+    """
+    (desc, labels) = LS
+    
+    n = desc.shape[0]
+    indices = list(range(n))
+    idx_ech = tirage(indices, m, avecRemise)
+    desc_ech = desc[idx_ech, :]
+    labels_ech = labels[idx_ech]
+    return (desc_ech, labels_ech)    
+
+class ClassifierBaggingTree(Classifier):
+
+    def __init__(self, input_dimension, B, pct, epsilon, avecRemise):
+        """
+        input_dimension : dimension
+        B : nombre d’arbres
+        pct : pourcentage de la base utilisé pour chaque bootstrap (entre 0 et 1)
+        epsilon : seuil d’arrêt d’entropie pour chaque arbre
+        avecRemise : booléen = True pour tirage avec remise, False sinon
+        """
+        super().__init__(input_dimension)
+        self.B = B
+        self.pct = pct
+        self.epsilon = epsilon
+        self.avecRemise = avecRemise
+        self.trees = [] 
+
+    def train(self, desc_set, label_set):
+        
+        X, Y = desc_set, label_set
+        m = int(np.ceil(self.pct * X.shape[0]))
+        self.trees = []
+        for _ in range(self.B):
+            Xb, Yb = echantillonLS((X, Y), m, self.avecRemise)
+            t = ClassifierArbreNumerique(self.dimension, self.epsilon)
+            t.train(Xb, Yb)
+            self.trees.append(t)
+
+    def score(self, x):
+        votes = [tree.predict(x) for tree in self.trees]
+        frac_pos = sum(1 for v in votes if v == 1) / self.B
+        return 2 * (frac_pos - 0.5)
+
+    def predict(self, x):
+        """
+        vote +1 si score >= 0, sinon -1
+        """
+        return 1 if self.score(x) >= 0 else -1

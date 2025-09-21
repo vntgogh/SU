@@ -1,9 +1,0 @@
-{
-    "C_Cpp.errorSquiggles": "disabled",
-    "files.associations": {
-        "stdlib.h": "c",
-        "chaine.h": "c",
-        "stdio.h": "c",
-        "reseau.h": "c"
-    }
-}

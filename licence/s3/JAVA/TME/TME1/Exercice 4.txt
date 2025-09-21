@@ -1,0 +1,5 @@
+Exercice 4
+
+Q.4.4 Pour taper des commandes sur le terminal plus rapidement, il suffit de les retrouver avec les flèches haut et bas du clavier.
+Il est important d'indenter ses programmes pour une meilleure lisibilité et une meilleure compréhension du code.
+Il est important de compiler et exécuter son code régulièrement pour pouvoir régler les petites erreurs plutôt que des erreurs plus complexes à la fin du programme.

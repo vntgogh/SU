@@ -1,0 +1,89 @@
+Application de GS_etu et GS_master avec PrefEtu.txt et PrefSpe.txt
+
+Affectation master optimal : {7: 7, 9: 2, 5: 0, 3: 0, 10: 4, 1: 5, 0: 6, 4: 1, 6: 8, 8: 3, 2: 8}
+Affectation Etudiant optimal : {0: 5, 1: 6, 4: 1, 5: 0, 7: 7, 9: 2, 10: 4, 3: 0, 6: 8, 2: 8, 8: 3}
+
+Verification des paires instables sur les affectations résultantes 
+
+Paires instables etu : []
+Paires instables master : []
+Mesure du temps de calculs des algorithmes de GS
+Valeurs de n 	 Temps d'éxecution étudiant 	 Temps d'éxecution master
+200         	0.001002335548400879          	0.0005698919296264649         
+400         	0.0017059803009033202         	0.000992560386657715          
+600         	0.0026227951049804686         	0.0015697956085205078         
+800         	0.0036997318267822264         	0.0020255327224731447         
+1000        	0.004571461677551269          	0.002549576759338379          
+1200        	0.005970144271850586          	0.00316472053527832           
+1400        	0.006693530082702637          	0.0033875465393066405         
+1600        	0.007634854316711426          	0.004176044464111328          
+1800        	0.008833646774291992          	0.0045714139938354496         
+2000        	0.009948420524597167          	0.004938530921936035          
+Mesure du nombre d'iterations des algorithmes de GS
+Valeurs de n 	 Nombre d'iterations étudiant 	 Nombre d'iterations master
+200         	547.1                         	542.9                         
+400         	1113.0                        	1069.8                        
+600         	1651.8                        	1665.8                        
+800         	2071.2                        	2376.2                        
+1000        	2684.5                        	2876.9                        
+1200        	3387.6                        	3293.9                        
+1400        	3918.1                        	3709.3                        
+1600        	4523.3                        	4348.3                        
+1800        	4831.1                        	5248.0                        
+2000        	5477.4                        	5640.8                        
+Premier PLNE : K premier choix 
+
+L'affectation trouvé est la suivante : {0: 3, 1: 0, 2: 8, 3: 6, 4: 1, 5: 2, 6: 7, 7: 4, 8: 8, 9: 5, 10: 0}
+Les etudiants et le classement du parcours recu : {0: 4, 1: 2, 2: 4, 3: 0, 4: 0, 5: 3, 6: 1, 7: 2, 8: 4, 9: 2, 10: 2}
+
+Deuxieme PLNE : K premier choix maximisant l'utilité minimale des étudiants
+L'affectation trouvé est la suivante : {0: 7, 1: 6, 2: 4, 3: 8, 4: 1, 5: 2, 6: 5, 7: 0, 8: 8, 9: 3, 10: 0}
+Les etudiants et le classement du parcours recu : {0: 1, 1: 0, 2: 0, 3: 4, 4: 0, 5: 3, 6: 0, 7: 1, 8: 4, 9: 4, 10: 2}
+L'utilite minimal : 4.0
+
+Troisieme PLNE : Maximise la somme des utilité
+
+L'affectation trouvé est la suivante : {0: 8, 1: 5, 2: 8, 3: 6, 4: 1, 5: 0, 6: 7, 7: 0, 8: 3, 9: 2, 10: 4}
+La somme des utilité : 156.0
+Utilité moyenne : 14.181818181818182
+L'utilité minimal : 3
+
+Quatrieme PLNE : Maximise la somme des utilité en prenant un des K premier choix 
+
+L'affectation trouvé est la suivante : {0: 8, 1: 5, 2: 8, 3: 6, 4: 1, 5: 0, 6: 7, 7: 0, 8: 2, 9: 3, 10: 4}
+La somme des utilité : 154.0
+Les etudiants et le classement du parcours recu : {0: 3, 1: 1, 2: 4, 3: 0, 4: 0, 5: 0, 6: 1, 7: 1, 8: 3, 9: 4, 10: 1}
+
+Comparaison des différentes solutions obtenues 
+
+Solution Premier PLNE : 
+ Paires instables : [(1, 6), (1, 5), (10, 4), (5, 0), (5, 4), (0, 5), (0, 6), (0, 8), (7, 7), (7, 0), (9, 2), (6, 5)]
+ Moyenne utilite : 10.636363636363637
+ Utilite minimal : 4
+
+Solution Deuxieme PLNE : 
+ Paires instables : [(7, 7), (10, 4), (5, 0), (5, 7), (5, 4), (9, 2), (9, 8), (0, 5), (3, 5), (3, 7), (3, 0)]
+ Moyenne utilite : 11.909090909090908
+ Utilite minimal : 4.0
+
+Solution Troisieme PLNE : 
+ Paires instables : [(7, 7), (1, 6), (0, 6)]
+ Moyenne utilite : 14.181818181818182
+ Utilite minimal : 3
+
+Solution Quatrieme PLNE : 
+ Paires instables : [(7, 7), (9, 2), (1, 6), (0, 6)]
+ Moyenne utilite : 14.0
+ Utilite minimal : 4
+
+Solution Gale Shapley cote etudiant : 
+ Paires instables : []
+ Moyenne utilite : 13.454545454545455
+ Utilite minimal : 3
+
+Solution Gale Shapley cote master : 
+ Paires instables : []
+ Moyenne utilite : 13.363636363636363
+ Utilite minimal : 3
+
+Fin du projet <3 !
