@@ -8,9 +8,9 @@ serverSocket.listen(1)
 print('server ready')
 while True:
     connectionSocket, address = serverSocket.accept()
-    message, clientAddress = connectionSocket.recv(2048).decode('utf-8')
+    message = connectionSocket.recv(2048).decode('utf-8')
 
-    print(message, " de ", clientAddress)
+    print(message)
 
     server_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') [:-3]
 
