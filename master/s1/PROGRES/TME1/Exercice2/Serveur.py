@@ -10,6 +10,8 @@ while True:
     connectionSocket, address = serverSocket.accept()
     message = connectionSocket.recv(2048).decode('utf-8')
 
+    print(message, " de ", clientAddress)
+
     server_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') [:-3]
 
     modifiedMessage = server_time.encode('utf-8')

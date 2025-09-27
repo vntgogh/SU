@@ -21,16 +21,3 @@ diff = (server_time_dt - client_time_dt).total_seconds()
 
 print("Différence temps client et temps serveur :", diff)
 clientSocket.close()
-
-""" question 2
-
-sur la même machine :
-temps client :  2025-09-27 13:43:13.857000
-temps serveur :  2025-09-27 13:43:13.857000
-Différence temps client et temps serveur : 0.0
-
-sur machines différentes : 
-temps client :  2025-09-27 13:49:47.177000
-temps serveur :  2025-09-27 13:49:50.474000
-Différence temps client et temps serveur : 3.297
-"""
