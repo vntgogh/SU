@@ -18,3 +18,7 @@ while True:
 
     connectionSocket.send(modifiedMessage)
     connectionSocket.close()
+
+"""
+Prompt : Quelle fonction en Python permet de donner l'heure en temps réel avec les secondes ?'
+"""

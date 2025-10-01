@@ -1,5 +1,4 @@
 from socket import *
-import time
 
 serverPort = 1234
 serverSocket = socket(AF_INET,SOCK_DGRAM)
@@ -14,3 +13,9 @@ while True:
     modifiedMessage = message.decode('utf-8').upper()
 
     serverSocket.sendto(modifiedMessage.encode('utf-8'),clientAddress)
+
+"""
+LLM utilisé : Perplexity
+Prompt : 
+- Que faut-il modifier chez le client pour tester notre serveur si le client et le serveur sont sur deux machiens différentes ?
+"""
