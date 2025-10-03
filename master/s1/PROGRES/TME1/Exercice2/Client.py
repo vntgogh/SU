@@ -1,36 +1,19 @@
 from socket import *
-from datetime import datetime
+import time
+from struct import *
 
-serverName = '192.168.1.17'
+serverName = gethostname()
 serverPort = 1234
 clientSocket = socket(AF_INET,SOCK_STREAM)
 clientSocket.connect((serverName,serverPort))
 
-FMT = '%Y-%m-%d %H:%M:%S.%f'
-client_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+temps_client = time.time()
+print("temps client : ",temps_client," secondes")
 
-clientSocket.send(client_time.encode('utf-8'))
-server_time = clientSocket.recv(2048).decode('utf-8')
+clientSocket.send(pack('!d',temps_client))
+temps_serv = clientSocket.recv(2048)
+print("Temps serveur : ", unpack('!d',temps_serv)[0]," secondes")
+diff = unpack('!d',temps_serv)[0] - temps_client
 
-client_time_dt = datetime.strptime(client_time, FMT)
-server_time_dt = datetime.strptime(server_time, FMT)
-print("temps client : ", client_time_dt)
-print("temps serveur : ", server_time_dt)
-
-diff = (server_time_dt - client_time_dt).total_seconds()
-
-print("Différence temps client et temps serveur :", diff)
+print("Différence temps client - temps serveur :", diff," secondes")
 clientSocket.close()
-
-""" question 2
-
-sur la même machine :
-temps client :  2025-09-27 13:43:13.857000
-temps serveur :  2025-09-27 13:43:13.857000
-Différence temps client et temps serveur : 0.0
-
-sur machines différentes : 
-temps client :  2025-09-27 13:49:47.177000
-temps serveur :  2025-09-27 13:49:50.474000
-Différence temps client et temps serveur : 3.297
-"""

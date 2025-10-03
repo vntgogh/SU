@@ -1,6 +1,11 @@
 from socket import *
 from struct import *
 
+clientSocket = socket(AF_INET, SOCK_STREAM)
+ipServeur = gethostname()  
+serverPort = 1234              
+fich = 'bonjour.txt' 
+
 def recvall(sock, length):
     blocks = []
     while length:
@@ -11,34 +16,21 @@ def recvall(sock, length):
         blocks.append(block)
     return b''.join(blocks)
 
-def client_web(ipServeur, serverPort, fich):
-    clientSocket = socket(AF_INET, SOCK_STREAM)
+header_struct = Struct("!I")
+def put_block(sock, message):
+    block_length = len(message)
+    sock.sendall(header_struct.pack(block_length))
+    sock.sendall(message)
 
-    try:
-        clientSocket.connect((ipServeur, serverPort))
-        print("Connecté au serveur ",ipServeur,":",serverPort)
+def get_block(sock):
+    data = recvall(sock, header_struct.size)
+    (block_length,) = header_struct.unpack(data)
+    return recvall(sock, block_length)
 
-        message = f"GET /{fich} HTTP/1.1\r\nHost: {ipServeur}\r\n\r\n"
+clientSocket.connect((ipServeur, serverPort))
+print("IP Server : ",ipServeur,", Port : ",serverPort)
 
-        clientSocket.sendall(message.encode('utf-8'))
-
-        """Prompt : comment récupérer l'entièreté des données venant d'une réponse du serveur sous http"""
-        rep = b"" 
-        while True:
-            data = clientSocket.recv(4096)
-            if not data: #condition d'arret
-                break
-            rep += data
-
-        print(rep.decode('utf-8'))
-        clientSocket.close()
-
-    except Exception as e:
-        print(e)
-        clientSocket.close()
-
-ipServeur = gethostname()  
-serverPort = 1234              
-fich = 'bonjour.txt' 
-
-client_web(ipServeur, serverPort, fich)
+message = "GET "+fich+ " HTTP/1.1\r\nHost: "+ipServeur+"\r\n\r\n"
+put_block(clientSocket, message.encode('utf-8'))
+print(get_block(clientSocket).decode('utf-8'))
+clientSocket.close()

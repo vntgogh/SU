@@ -4,9 +4,9 @@ import time
 ipServeur = gethostname() 
 serverPort = 1234
 clientSocket = socket(AF_INET,SOCK_DGRAM)
-message = "def".encode('utf-8')
+message = "def"
 debut = time.time()
-clientSocket.sendto(message,(ipServeur ,serverPort))    
+clientSocket.sendto(message.encode('utf-8'),(ipServeur ,serverPort))    
 modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
 print(modifiedMessage.decode('utf-8'))
 clientSocket.close()
