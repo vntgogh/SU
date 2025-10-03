@@ -1,5 +1,7 @@
 from socket import *
-from datetime import datetime
+import time
+from struct import *
+
 
 serverPort = 1234
 serverSocket = socket(AF_INET,SOCK_STREAM)
@@ -8,13 +10,12 @@ serverSocket.listen(1)
 print('server ready')
 while True:
     connectionSocket, address = serverSocket.accept()
-    message = connectionSocket.recv(2048).decode('utf-8')
+    temps_client = connectionSocket.recv(2048)
 
-    print(message)
+    print("temps client : ",unpack('!d',temps_client)[0], " secondes")
 
-    server_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') [:-3]
+    temps_serv = time.time()
+    print("temps serveur : ", temps_serv, " secondes")
 
-    modifiedMessage = server_time.encode('utf-8')
-
-    connectionSocket.send(modifiedMessage)
+    connectionSocket.send(pack('!d',temps_serv))
     connectionSocket.close()
