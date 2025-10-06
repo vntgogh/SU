@@ -1,0 +1,31 @@
+w = logspace(-2, 3); % intervalle : [10^(-2);10^3] soit 0.01 à 1000
+
+% gain et phase :
+mod = zeros(size(w));
+phase = zeros(size(w));
+
+% calcule le module et la phase pour chaque fréquence
+for i = 1:length(w)
+    S = 1j * w(i); % s = jw (partie imaginaire), 1j = sqrt(-1) = i
+
+    % coef numérateur : 20S(S+100) = 20*S^2 + 2000*S
+    % coef dénominateur : (S+2)(S+10) = S^2 + 12*s + 20
+    H = polyval([20 2000], S) / polyval([1 12 20], S); % définition de H(S)
+
+    mod(i) = 20 * log10(abs(H)); % convertit le gain en dB
+    phase(i) = angle(H) * (180/pi); % angle(H) calcule la phase en rad puis on multiplie par 180/pi pour convertir en degrés car 180° = pi radians 
+end
+
+figure;
+
+% plot module
+subplot(2, 1, 1);
+semilogx(w, mod);
+title('Diagramme de Bode');
+ylabel('Module en dB');
+
+% Phase graphique
+subplot(2, 1, 2);
+semilogx(w, phase);
+xlabel('Fréquence');
+ylabel('Phase en degré');
