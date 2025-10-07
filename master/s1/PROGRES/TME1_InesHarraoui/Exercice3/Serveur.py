@@ -1,17 +1,7 @@
 from socket import *
-from threading import Thread
+from threading import *
 from pathlib import Path
 from struct import *
-
-header_struct = Struct("!I")
-def put_block(sock, message):
-    block_length = len(message)
-    sock.sendall(header_struct.pack(block_length))
-    sock.sendall(message)
-
-def get_txt(test):
-    with open(test, 'rb') as f:
-        return f.read().decode('utf8')
 
 serverPort = 1234
 serverSocket = socket(AF_INET,SOCK_STREAM)
@@ -19,8 +9,33 @@ serverSocket.bind(('',serverPort))
 serverSocket.listen(10)
 print('server ready')
 
+def recvall(sock, length):
+    blocks = []
+    while length:
+        block = sock.recv(length)
+        if not block:
+            raise EOFError('socket closed with %d bytes left'' in this block'.format(length))
+        length -= len(block)
+        blocks.append(block)
+    return b''.join(blocks)
+
+header_struct = Struct("!I")
+def put_block(sock, message):
+    block_length = len(message)
+    sock.sendall(header_struct.pack(block_length))
+    sock.sendall(message)
+
+def get_block(sock):
+    data = recvall(sock, header_struct.size)
+    (block_length,) = header_struct.unpack(data)
+    return recvall(sock, block_length)
+
+def get_txt(test):
+    with open(test, 'rb') as f:
+        return f.read().decode('utf8')
+
 def handle_client(connectionSocket, addr):
-    message = connectionSocket.recv(1024).decode()
+    message = get_block(connectionSocket).decode('utf-8')     
     print("message : ", message, " de ", addr)
 
     fich = message.split('\n')[0].split(' ')[1] #recupere le 2eme mot de la 1ere ligne(fichier)
