@@ -1,7 +1,7 @@
 from socket import *
 from struct import *
 
-relaiName = 'localhost'
+relaiName = '192.168.1.95'
 relaiPort = 1235
 clientSocket = socket(AF_INET,SOCK_STREAM)
 clientSocket.connect((relaiName,relaiPort))
