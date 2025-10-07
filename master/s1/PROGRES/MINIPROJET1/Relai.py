@@ -37,18 +37,17 @@ def get_block(sock):
 def handle_client(clientConnection):
     clientSocket = socket(AF_INET, SOCK_STREAM)
     clientSocket.connect((serverName, serverPort))
-
-    raw_length = recvall(clientConnection, 4)
-    message_length = unpack('!I', raw_length)[0]
     
-    message = clientConnection.recvall(2048)
+    message = get_block(clientConnection)
     print("message du client :", message.decode('utf-8'))
-    clientSocket.send(message)
+
+    put_block(clientSocket,message)
     print("message envoyé au serveur")
     
-    reponse = clientSocket.recvall(2048)
+    reponse = get_block(clientSocket)
     print("réponse du serveur :", reponse.decode('utf-8'))
-    clientConnection.send(reponse)
+
+    put_block(clientConnection,reponse)
     print("réponse envoyée au client")
     
     clientConnection.close()

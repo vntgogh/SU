@@ -30,15 +30,11 @@ def get_block(sock):
     (block_length,) = header_struct.unpack(data)
     return recvall(sock, block_length)
 
-def get_txt(test):
-    with open(test, 'rb') as f:
-        return f.read().decode('utf8')
-
 def handle_client(connectionSocket):
     message = get_block(connectionSocket).decode('utf-8')     
     print("message : ", message)
 
-    reponse = message.decode('utf-8').upper()
+    reponse = message.upper()
     print("réponse envoyée au relai : ", reponse)
 
     put_block(connectionSocket, (reponse).encode('utf-8'))

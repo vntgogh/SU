@@ -29,13 +29,7 @@ def get_block(sock):
     (block_length,) = header_struct.unpack(data)
     return recvall(sock, block_length)
 
-clientSocket.send(message.encode('utf-8')) #envoi au relai
-print("message envoyé au relai : ",message)
-reponse = clientSocket.recv(2048) #reponse du relai
-print("reponse : ",reponse.decode('utf-8')) 
-
 put_block(clientSocket, message.encode('utf-8'))
-print(get_block(clientSocket).decode('utf-8'))
-clientSocket.close()
-
+print("message envoyé au relai : ", message)
+print("reponse : ", get_block(clientSocket).decode('utf-8'))
 clientSocket.close()
