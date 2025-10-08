@@ -9,6 +9,7 @@ serverName = str(input("Entrer l'adresse IP du serveur : "))
 main_uri = str(input("Entrer une URI : "))
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 serverSocket.bind(('', relaiPort))
 serverSocket.listen(5)
 print('relai ready')

@@ -8,7 +8,9 @@ serverPort = int(input("Entrer le port du serveur : "))
 serverName = str(input("Entrer l'adresse IP du serveur : "))
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 serverSocket.bind(('', relaiPort))
+
 serverSocket.listen(5)
 print('relai ready')
 
