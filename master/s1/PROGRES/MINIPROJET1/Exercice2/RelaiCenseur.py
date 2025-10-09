@@ -6,7 +6,7 @@ relaiPort = 1236
 
 serverPort = int(input("Entrer le port du serveur : "))
 serverName = str(input("Entrer l'adresse IP du serveur : "))
-main_uri = str(input("Entrer une URI : "))
+interdits = ['interdit1.txt', 'interdit2.txt']
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1) #evite d'avoir l'erreur adresse déja utilisée 
@@ -46,36 +46,30 @@ def handle_client(clientConnection, addrClient):
     message = get_block(clientConnection).decode('utf-8')     
     print("message du client :", message,"\n")
 
-    put_block(clientSocket, message.encode('utf-8'))
-    print("message envoyé au serveur\n")
-
-    reponse = get_block(clientSocket).decode('utf-8')
-    print("réponse du serveur :", reponse,"\n")
-
     uri = message.split('\n')[0].split(' ')[1].strip() 
-    with open('sniffer.log', 'a') as f:
-        f.write(uri + " : "+ addrClient[0] + "\n")
+    if uri not in interdits :
+        put_block(clientSocket, message.encode('utf-8'))
+        print("message envoyé au serveur\n")
+        
+        reponse = get_block(clientSocket).decode('utf-8')
+        print("réponse du serveur :", reponse,"\n")
 
-    if reponse:
-        with open('sniffer.log', 'a') as f:
-            f.write(uri + " : " +addrClient[0] + "\n")
+        put_block(clientConnection, reponse.encode('utf-8'))
+        print("réponse envoyée au client\n")
+        
+        clientConnection.close()
+        clientSocket.close()
+    else:
+        reponse = 'HTTP/1.1 403 Site Interdit\r\n\r\n'
+        put_block(clientConnection, reponse.encode('utf-8'))
+        print("URI interdite, réponse 403 envoyée au client\n")
+        
+        with open('interdit.log', 'a') as f:
+            f.write(uri + " : "+ addrClient[0] + "\n")
 
-    put_block(clientConnection, reponse.encode('utf-8'))
-    print("réponse envoyée au client\n")
-
-    clientConnection.close()
-    clientSocket.close()
-
-    main_uri_clients =[]
-    with open('sniffer.log', 'r') as f:
-        for ligne in f:
-            if main_uri in ligne:
-                    if ligne.split(' : ')[1] not in main_uri_clients:
-                        main_uri_clients.append(ligne.split(' : ')[1])
-        print("Adresses clients ayant demandé l'URI " +main_uri + " : ")
-    for client in main_uri_clients:
-        print(client)
-
+        clientConnection.close()
+        clientSocket.close()
+    
 while True:
     clientConnection, address = serverSocket.accept()
     print("connexion client acceptée\n")

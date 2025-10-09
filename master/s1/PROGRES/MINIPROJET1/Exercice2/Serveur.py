@@ -55,7 +55,6 @@ def handle_client(connectionSocket):
 
     else:
         rep = 'HTTP/1.1 404 Not Found\r\n\r\n'
-        msg_error = '404 Not Found'
         put_block(connectionSocket, (rep + contenu).encode('utf-8'))
     connectionSocket.close()
 

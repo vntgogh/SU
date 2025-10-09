@@ -5,7 +5,7 @@ relaiName = 'localhost'
 relaiPort = 1236
 clientSocket = socket(AF_INET,SOCK_STREAM)
 clientSocket.connect((relaiName,relaiPort))
-fich = 'bonjour.txt' 
+fich = 'interdit2.txt' 
 message = "GET "+fich+ " HTTP/1.1\r\nHost: "+relaiName+"\r\n\r\n"
 
 def recvall(sock, length):
