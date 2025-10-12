@@ -9,7 +9,6 @@ serverName = str(input("Entrer l'adresse IP du serveur : "))
 main_uri = str(input("Entrer une URI : "))
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
-serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1) #evite d'avoir l'erreur adresse déja utilisée 
 serverSocket.bind(('', relaiPort))
 serverSocket.listen(5)
 print('relai ready')
@@ -58,7 +57,7 @@ def handle_client(clientConnection, addrClient):
 
     if reponse:
         with open('sniffer.log', 'a') as f:
-            f.write(uri + " : " +addrClient[0] + "\n")
+            f.write(reponse + " : " +addrClient[0] + "\n")
 
     put_block(clientConnection, reponse.encode('utf-8'))
     print("réponse envoyée au client\n")
@@ -72,7 +71,7 @@ def handle_client(clientConnection, addrClient):
             if main_uri in ligne:
                     if ligne.split(' : ')[1] not in main_uri_clients:
                         main_uri_clients.append(ligne.split(' : ')[1])
-        print("Adresses clients ayant demandé l'URI " +main_uri + " : ")
+        print("Adresses clients ayant demandé l'URI " + main_uri + " : ")
     for client in main_uri_clients:
         print(client)
 

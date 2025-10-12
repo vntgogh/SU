@@ -9,7 +9,6 @@ serverName = str(input("Entrer l'adresse IP du serveur : "))
 interdits = ['interdit1.txt', 'interdit2.txt']
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
-serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1) #evite d'avoir l'erreur adresse déja utilisée 
 serverSocket.bind(('', relaiPort))
 serverSocket.listen(5)
 print('relai ready')
