@@ -1,12 +1,12 @@
 from socket import *
 from struct import *
 
-relaiName = '192.168.1.95'
-relaiPort = 1235
+relaiName = 'localhost'
+relaiPort = 1236
 clientSocket = socket(AF_INET,SOCK_STREAM)
 clientSocket.connect((relaiName,relaiPort))
-
-message = "abc"
+fich = 'interdit2.txt' 
+message = "GET "+fich+ " HTTP/1.1\r\nHost: "+relaiName+"\r\n\r\n"
 
 def recvall(sock, length):
     blocks = []
@@ -30,6 +30,6 @@ def get_block(sock):
     return recvall(sock, block_length)
 
 put_block(clientSocket, message.encode('utf-8'))
-print("message envoyé au relai : ", message)
-print("reponse : ", get_block(clientSocket).decode('utf-8'))
+print("message envoyé au relai : ", message,"\n")
+print("reponse du relai : ", get_block(clientSocket).decode('utf-8'))
 clientSocket.close()
