@@ -24,7 +24,7 @@ Fonctionnement :
 Un client envoie une requête de lecture de fichier par l'intermédiaire d'un ou de plusieurs relais.
 Le serveur lit et renvoie le contenu des fichiers demandés, ou retourne une erreur HTTP si le fichier n'a pas été trouvé.
 Les relais, ainsi que le serveur, traitent les connexions en parallèle avec multithreading.
-On peut connecter les entités de la manière suivante : client > cache > censeur > log > serveur.
+On peut connecter les entités de la manière suivante : client -> cache -> censeur -> log -> serveur.
 
 Pour lancer l'exécution des fichiers :
 - on lance le serveur sur le port 1234
