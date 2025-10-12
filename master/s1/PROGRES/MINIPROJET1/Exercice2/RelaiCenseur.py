@@ -65,7 +65,7 @@ def handle_client(clientConnection, addrClient):
         print("URI interdite, réponse 403 envoyée au client\n")
         
         with open('interdit.log', 'a') as f:
-            f.write(uri + " : "+ addrClient[0] + "\n")
+            f.write(addrClient[0] + "\n")
 
         clientConnection.close()
         clientSocket.close()
