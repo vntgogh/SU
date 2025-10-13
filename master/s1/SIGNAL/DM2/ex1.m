@@ -1,32 +1,44 @@
-w = logspace(-2, 3); % intervalle = [10^(-2);10^3] donc de 0.01 à 1000
+% Calcul de H sans la fonction bode()
+f = 0.1:0.1:1000; % Fréquences de 0.1 à 1000 
+s = 1j*2*pi*f;
+H1 = (20 * s .* (s + 100)) ./ ((s + 2) .* (s + 10)); % Calcul de H(s)
 
-% gain et phase :
-mod = zeros(size(w));
-phase = zeros(size(w));
+gain1 = 20 * log10(abs(H1)); % Gain en dB
+phase1 = angle(H1) * (180/pi); % Phase en degrés
 
-% calcule le module et la phase pour chaque fréquence
-for i = 1:length(w)
-    S = 1j * w(i); % s = jw avec 1j = sqrt(-1) = i
-
-    % coef numérateur : 20S(S+100) = 20*S^2 + 2000*S
-    % coef dénominateur : (S+2)(S+10) = S^2 + 12*s + 20
-    H = polyval([20 2000], S) / polyval([1 12 20], S); % définition de H(S)
-
-    mod(i) = 20 * log10(abs(H)); % convertit le gain en dB
-    phase(i) = angle(H) * (180/pi); % angle(H) calcule la phase en rad puis on multiplie 
-    % par 180/pi pour convertir en degrés car 180° = pi radian
-end
+% Calcul de H avec la fonction bode()
+H = tf([20, 2000], [1, 12, 20]);
+[~, ~, wout] = bode(H, 2 * pi * f);
+gain2 = squeeze(gain1); 
+phase2 = squeeze(phase1); 
 
 figure;
 
-% plot module
+% Superpositions des gains
 subplot(2, 1, 1);
-semilogx(w, mod);
-title('Diagramme de Bode');
-ylabel('Module en dB');
+yyaxis left;
+semilogx(f, gain1, 'Color', [1, 0, 1]);
+ylabel('Gain (dB)');
+title('Superpositions des gains');
+hold on;
 
-% plot phase 
-subplot(2, 1, 2);
-semilogx(w, phase);
+yyaxis right;
+semilogx(f, gain2, '--r', 'Color', [0, 1, 1]');
+
 xlabel('Fréquence');
-ylabel('Phase en degré');
+legend('Gain sans bode()', 'Gain avec bode()');
+hold off;
+
+% Superpositions des phases
+subplot(2, 1, 2);
+yyaxis left;
+semilogx(f, phase1, 'Color', [1, 0, 1]);
+ylabel('Phase (degrés)');
+title('Superpositions des phases');
+hold on;
+
+yyaxis right;
+semilogx(f, phase2, '--r','Color', [0, 1, 1]');
+xlabel('Fréquence');
+legend('Phase sans bode()', 'Phase avec bode()');
+hold off;
