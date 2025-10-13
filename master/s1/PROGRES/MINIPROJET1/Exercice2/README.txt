@@ -22,11 +22,11 @@ sniffer.log	    : log des URI consultées avec adresse client associée (Format 
 
 Fonctionnement :
 Un client envoie une requête de lecture de fichier par l'intermédiaire d'un ou de plusieurs relais.
-Le serveur lit et renvoie le contenu des fichiers demandés, ou retourne une erreur HTTP si le fichier n'a pas été trouvé.
-Les relais, ainsi que le serveur, traitent les connexions en parallèle avec multithreading.
+Le serveur renvoie le contenu des fichiers demandés ou retourne une erreur HTTP si le fichier n'a pas été trouvé.
+Les relais, ainsi que le serveur, traitent les connexions en parallèle avec le multithreading.
 On peut connecter les entités de la manière suivante : client -> cache -> censeur -> log -> serveur.
 
-Pour lancer l'exécution des fichiers :
+Pour lancer l'exécution des fichiers, dans l'ordre,
 - on lance le serveur sur le port 1234
-- on lance un relai avec l’IP et le port du serveur
-- on lance un client avec l'IP et le port du relai
+- puis, on lance un relai avec l’IP et le port du serveur
+- enfin, on lance un client avec l'IP et le port du relai
