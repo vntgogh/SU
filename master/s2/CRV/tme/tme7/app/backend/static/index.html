@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Films</title>
+</head>
+<body>
+<h1>Liste des Films</h1>
+<div id="movies"></div>
+
+<script>
+fetch("/movies")
+.then(res => res.json())
+.then(data => {
+    const div = document.getElementById("movies");
+    data.forEach(movie => {
+        // Supprime "backend", l'image est déjà accessible via movie.image
+        div.innerHTML += `<h3>${movie.title}</h3><img src="./images/${movie.image}" alt="${movie.title}" />`;
+    });
+});
+</script>
+
+</body>
+</html>

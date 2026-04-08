@@ -1,0 +1,24 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Films</title>
+</head>
+<body>
+<h1>Liste des Films</h1>
+<div id="movies"></div>
+
+<script>
+backend = "http://backend:8000"
+fetch(`${backend}/movies`)
+.then(res => res.json())
+.then(data => {
+    const div = document.getElementById("movies");
+    data.forEach(movie => {
+        div.innerHTML += `<h3>${movie.title}</h3><img src="${backend}${movie.image}"/>`;
+    });
+});
+</script>
+
+</body>
+</html>
