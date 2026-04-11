@@ -7,14 +7,14 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 ## L1
 
 ### UEs suivies au s1 :
-- Maths 1
+- Mathématiques pour les Sciences 1
 - Projet informatique
 - Sciences des données
-- OIP
+- Orientation et Insertion Professionnelle
 
 ### UEs suivies au s2 :
-- Maths 2
-- Maths 3
+- Mathématiques pour les Sciences 2
+- Maths approfondies
 - C
 - IMTT (Journalisme)
 
@@ -44,7 +44,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 - Réseaux
 - Architecture des données
 - Programmation Orientée Objet (Java)
-- OIP
+- Orientation et Insertion Professionnelle
 
 ### UEs suivies au s2 :
 - Calculabilité
@@ -67,7 +67,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
   
 ### UEs suivies au s2 :
 - Mobilités (MOB)
-- COMNUM
+- Communications Numériques
 - Algorithmique des réseaux
 - Cloud et Réseaux Virtuels
 - PRES (Projet SR-TE)
