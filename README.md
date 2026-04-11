@@ -10,7 +10,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 - Mathématiques pour les Sciences 1
 - Projet informatique
 - Sciences des données
-- Orientation et Insertion Professionnelle
+- Orientation et Insertion Professionnelle (OIP)
 
 ### UEs suivies au s2 :
 - Mathématiques pour les Sciences 2
@@ -24,7 +24,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 - Initiation au Shell et systèmes d'exploitations
 - Java
 - Maths discrètes
-- RMN
+- Représentation et méthodes numériques
 - C avancé
 - OCaml
 
