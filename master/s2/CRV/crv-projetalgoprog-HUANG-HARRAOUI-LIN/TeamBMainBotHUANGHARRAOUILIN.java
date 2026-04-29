@@ -4,11 +4,12 @@ import characteristics.IFrontSensorResult;
 import characteristics.IRadarResult;
 import characteristics.Parameters;
 import java.util.ArrayList;
+import java.util.Random;
 import robotsimulator.Brain;
 
 public class TeamBMainBot extends Brain {
     private enum State {
-        MOVING, TURNING, FIRING, CHASING, REPOSITIONING
+        MOVING, TURNING, FIRING, CHASING
     }
 
     private enum Identity {
@@ -32,7 +33,7 @@ public class TeamBMainBot extends Brain {
         @Override
         public boolean equals(Object object) {
             if (object instanceof Position pos) {
-                return this.x == pos.x && this.y == pos.y;
+                return (int) this.x == (int) pos.x && (int) this.y == (int) pos.y;
             }
             return false;
         }
@@ -41,11 +42,12 @@ public class TeamBMainBot extends Brain {
     // ---PARAMETERS---//
     private static final double MOVEMENT_ANGLE_PRECISION = 0.02;
     private static final double FIRING_ANGLE_PRECISION = 0.5;
-    private static final double TURN_ANGLE = Math.PI / 2.5;
+    private static final double TURN_ANGLE = Math.PI / 4;
     private static final double RESET_DELAY = 5;
     private static final double SPEED = Parameters.teamBMainBotSpeed;
     private static final double RADIUS = Parameters.teamBMainBotRadius;
     private static final double FRONTAL_DETECTION_RANGE = Parameters.teamBMainBotFrontalDetectionRange;
+    private static final Random RANDOM = new Random();
 
     // ---VARIABLES---//
     private Identity id;
@@ -54,7 +56,6 @@ public class TeamBMainBot extends Brain {
     private boolean isMoving;
     private Position position;
     private Position enemyPosition;
-    private Position lastPosition;
     private double minMovement;
     private double resetDelay;
 
@@ -102,8 +103,14 @@ public class TeamBMainBot extends Brain {
 
             // --- Cible abattue ---
             if (!enemyDetected && object.getObjectType() == IRadarResult.Types.Wreck) {
-                enemyPosition = null;
-                broadcast("RESET");
+                double dist = object.getObjectDistance();
+                double direction = object.getObjectDirection();
+                Position wreckPosition = new Position(
+                        position.x + dist * Math.cos(direction),
+                        position.y + dist * Math.sin(direction));
+                if (wreckPosition.equals(enemyPosition)) {
+                    enemyPosition = null;
+                }
             }
 
             // --- Partage position ennemie ---
@@ -119,19 +126,15 @@ public class TeamBMainBot extends Brain {
         }
 
         // --- Ennemi déplacé ---
-        if (enemyPosition != null && !enemyDetected) {
+        if (enemyPosition != null && !enemyDetected && getDistance(enemyPosition) <= FRONTAL_DETECTION_RANGE) {
             enemyPosition = null;
         }
 
         // --- Réception messages ---
         ArrayList<String> messages = fetchAllMessages();
         for (String message : messages) {
-            if (message.equals("RESET")) {
-                enemyPosition = null;
-            } else {
-                String[] enemyPos = message.split(",");
-                enemyPosition = new Position(Double.valueOf(enemyPos[0]), Double.valueOf(enemyPos[1]));
-            }
+            String[] enemyPos = message.split(",");
+            enemyPosition = new Position(Double.valueOf(enemyPos[0]), Double.valueOf(enemyPos[1]));
         }
 
         // --- Détection mur ---
@@ -141,11 +144,9 @@ public class TeamBMainBot extends Brain {
 
         // --- Odométrie ---
         if (isMoving && !willCollideAlly && !willCollideEnemy) {
-            lastPosition.x = position.x;
-            lastPosition.y = position.y;
             position.x += SPEED * Math.cos(heading);
             position.y += SPEED * Math.sin(heading);
-        } else {
+        } else if (!isMoving && state != State.TURNING) {
             resetDelay--;
             if (resetDelay <= 0) {
                 minMovement = 0;
@@ -158,21 +159,31 @@ public class TeamBMainBot extends Brain {
         switch (state) {
             case MOVING:
                 if (willCollideAlly || willCollideWreck) {
-                    state = State.REPOSITIONING;
-                    targetAngle = normalize(heading + TURN_ANGLE);
+                    state = State.TURNING;
+                    targetAngle = normalize(heading + TURN_ANGLE * RANDOM.nextDouble(0, 1));
                     minMovement = RADIUS;
-                } else if (enemyPosition != null) {
-                    state = State.CHASING;
                 } else {
                     actionMove();
+                    if (minMovement > 0) {
+                        minMovement -= SPEED;
+                    } else if (enemyPosition != null) {
+                        state = State.CHASING;
+                    }
+                }
+                break;
+            case TURNING:
+                if (!isSameDirection(heading, targetAngle, MOVEMENT_ANGLE_PRECISION)) {
+                    if (normalize(targetAngle - heading) <= Math.PI) {
+                        stepTurn(Parameters.Direction.RIGHT);
+                    } else {
+                        stepTurn(Parameters.Direction.LEFT);
+                    }
+                } else {
+                    state = State.MOVING;
                 }
                 break;
             case CHASING:
-                if (willCollideAlly || willCollideWreck) {
-                    state = State.REPOSITIONING;
-                    targetAngle = normalize(heading + TURN_ANGLE);
-                    minMovement = RADIUS;
-                } else if (enemyPosition == null) {
+                if (enemyPosition == null) {
                     state = State.MOVING;
                     break;
                 } else {
@@ -181,8 +192,17 @@ public class TeamBMainBot extends Brain {
 
                     if (enemyDistance > FRONTAL_DETECTION_RANGE) {
                         if (!isSameDirection(heading, enemyAngle, MOVEMENT_ANGLE_PRECISION)) {
-                            state = State.REPOSITIONING;
+                            state = State.TURNING;
                             targetAngle = enemyAngle;
+                            minMovement = RADIUS;
+                        } else if (enemyDistance < FRONTAL_DETECTION_RANGE) {
+                            state = State.FIRING;
+                            if (enemyDistance > FRONTAL_DETECTION_RANGE) {
+                                actionMove();
+                            }
+                        } else if (willCollideAlly || willCollideWreck) {
+                            state = State.TURNING;
+                            targetAngle = normalize(heading + TURN_ANGLE * RANDOM.nextDouble(0, 1));
                         } else {
                             actionMove();
                         }
@@ -197,23 +217,6 @@ public class TeamBMainBot extends Brain {
                     state = State.CHASING;
                 } else {
                     state = State.MOVING;
-                }
-                break;
-            case REPOSITIONING:
-                if (!isSameDirection(heading, targetAngle, MOVEMENT_ANGLE_PRECISION)) {
-                    if (normalize(targetAngle - heading) <= Math.PI) {
-                        stepTurn(Parameters.Direction.RIGHT);
-                    } else {
-                        stepTurn(Parameters.Direction.LEFT);
-                    }
-                } else if (minMovement <= 0) {
-                    state = State.MOVING;
-                    minMovement = 0;
-                } else {
-                    actionMove();
-                    if (minMovement > 0) {
-                        minMovement -= SPEED;
-                    }
                 }
                 break;
 
@@ -259,8 +262,6 @@ public class TeamBMainBot extends Brain {
             position = new Position(Parameters.teamBMainBot3InitX, Parameters.teamBMainBot3InitY);
             targetAngle = Parameters.teamBMainBot3InitHeading;
         }
-
-        lastPosition = new Position(position.x, position.y);
     }
 
     // --- FONCTIONS UTILITAIRES ---

@@ -3,16 +3,16 @@ package algorithms;
 import characteristics.IFrontSensorResult;
 import characteristics.IRadarResult;
 import characteristics.Parameters;
-import java.util.ArrayList;
+import java.util.Random;
 import robotsimulator.Brain;
 
-public class TeamASecondaryBot extends Brain {
+public class TeamBSecondaryBot extends Brain {
     private enum State {
-        MOVING, TURNING, FIRING, CHASING, REPOSITIONING
+        MOVING, TURNING
     }
 
     private enum Identity {
-        ROCKY, MARIO, GEORGE
+        ROCKY, MARIO
     }
 
     private class Position {
@@ -34,8 +34,9 @@ public class TeamASecondaryBot extends Brain {
     private static final double MOVEMENT_ANGLE_PRECISION = 0.02;
     private static final double TURN_ANGLE = Math.PI / 3;
     private static final double RESET_DELAY = 5;
-    private static final double SPEED = Parameters.teamASecondaryBotSpeed;
-    private static final double RADIUS = Parameters.teamASecondaryBotRadius;
+    private static final double SPEED = Parameters.teamBSecondaryBotSpeed;
+    private static final double RADIUS = Parameters.teamBSecondaryBotRadius;
+    private static final Random RANDOM = new Random();
 
     // ---VARIABLES---//
     private Identity id;
@@ -43,11 +44,8 @@ public class TeamASecondaryBot extends Brain {
     private double targetAngle;
     private boolean isMoving;
     private Position position;
-    private Position lastPosition;
-    private double minMovement;
-    private double resetDelay;
 
-    public TeamASecondaryBot() {
+    public TeamBSecondaryBot() {
         super();
     }
 
@@ -55,8 +53,6 @@ public class TeamASecondaryBot extends Brain {
         setIdentity();
         state = State.MOVING;
         isMoving = false;
-        minMovement = 0;
-        resetDelay = RESET_DELAY;
     }
 
     public final void step() {
@@ -95,16 +91,8 @@ public class TeamASecondaryBot extends Brain {
 
         // --- Odométrie ---
         if (isMoving && !willCollide) {
-            lastPosition.x = position.x;
-            lastPosition.y = position.y;
             position.x += SPEED * Math.cos(heading);
             position.y += SPEED * Math.sin(heading);
-        } else {
-            resetDelay--;
-            if (resetDelay <= 0) {
-                minMovement = 0;
-                resetDelay = RESET_DELAY;
-            }
         }
         isMoving = false;
 
@@ -112,28 +100,21 @@ public class TeamASecondaryBot extends Brain {
         switch (state) {
             case MOVING:
                 if (willCollide) {
-                    state = State.REPOSITIONING;
-                    targetAngle = normalize(heading + TURN_ANGLE);
-                    minMovement = RADIUS;
+                    state = State.TURNING;
+                    targetAngle = normalize(heading + TURN_ANGLE * RANDOM.nextDouble(0, 1));
                 } else {
                     actionMove();
                 }
                 break;
-            case REPOSITIONING:
+            case TURNING:
                 if (!isSameDirection(heading, targetAngle)) {
                     if (normalize(targetAngle - heading) <= Math.PI) {
                         stepTurn(Parameters.Direction.RIGHT);
                     } else {
                         stepTurn(Parameters.Direction.LEFT);
                     }
-                } else if (minMovement <= 0) {
-                    state = State.MOVING;
-                    minMovement = 0;
                 } else {
-                    actionMove();
-                    if (minMovement > 0) {
-                        minMovement -= SPEED;
-                    }
+                    state = State.MOVING;
                 }
                 break;
 
@@ -165,15 +146,13 @@ public class TeamASecondaryBot extends Brain {
 
         if (!allyNorth) {
             id = Identity.ROCKY; // Haut
-            position = new Position(Parameters.teamASecondaryBot1InitX, Parameters.teamASecondaryBot1InitY);
-            targetAngle = Parameters.teamASecondaryBot1InitHeading;
+            position = new Position(Parameters.teamBSecondaryBot1InitX, Parameters.teamBSecondaryBot1InitY);
+            targetAngle = Parameters.teamBSecondaryBot1InitHeading;
         } else {
             id = Identity.MARIO; // Bas
-            position = new Position(Parameters.teamASecondaryBot2InitX, Parameters.teamASecondaryBot2InitY);
-            targetAngle = Parameters.teamASecondaryBot2InitHeading;
+            position = new Position(Parameters.teamBSecondaryBot2InitX, Parameters.teamBSecondaryBot2InitY);
+            targetAngle = Parameters.teamBSecondaryBot2InitHeading;
         }
-
-        lastPosition = new Position(position.x, position.y);
     }
 
     // --- FONCTIONS UTILITAIRES ---
