@@ -75,4 +75,6 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 ## M2
 
 ### UEs suivies au s1 :
-### Stage du s2 :
+### UEs suivies au s1 :
+- Orientation et Insertion Professionnelle
+- Stage
