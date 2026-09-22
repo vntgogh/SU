@@ -1,8 +1,8 @@
 Ce git rassemble l'ensemble de ma scolarité à Sorbonne Université (licence + master). 
 
-Mon parcours se constitue d'une licence mono-informatique via le portail Sciences formelles, ainsi que d'un master réseaux "Parcours RESeaux : Internet, Cybersécurité, Cloud et Automatisation".
+Mon parcours se constitue d'une licence mono-informatique via le portail Sciences formelles, ainsi que d'un master "Parcours RESeaux : Internet, Cybersécurité, Cloud et Automatisation".
 
-# Licence
+# Licence Informatique
 
 ## L1
 
@@ -53,7 +53,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 - Sciences des données
 - Anglais
 
-# Master
+# Master RES
 
 ## M1
 
