@@ -20,7 +20,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 
 ## L2
 
-### UEs suivies au s1 :
+### UEs suivies au s3 :
 - Initiation au Shell et systèmes d'exploitations
 - Java
 - Maths discrètes
@@ -28,7 +28,7 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 - C avancé
 - OCaml
 
-### UEs suivies au s2 :
+### UEs suivies au s4 :
 
 - Algorithmique 1
 - Structures de données
@@ -39,14 +39,14 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 
 ## L3
 
-### UEs suivies au s1 :
+### UEs suivies au s5 :
 - Algorithmique 2
 - Réseaux
 - Architecture des données
 - Programmation Orientée Objet (Java)
 - Orientation et Insertion Professionnelle
 
-### UEs suivies au s2 :
+### UEs suivies au s6 :
 - Calculabilité
 - Introduction à la cryptologie
 - IA et jeux
@@ -74,7 +74,14 @@ Mon parcours se constitue d'une licence mono-informatique via le portail Science
 
 ## M2
 
-### UEs suivies au s1 :
-### UEs suivies au s1 :
+### UEs suivies au s3 :
+- Graphs and Networks (GaN)
+- Internet of Blockchains (IoB)
+- Modélisation et Evaluation des Performances de Systèmes (MEPS)
+- Sécurité des réseaux (SECRES)
+- ItQoS (Ingénierie de trafic et de Qualité de Service)
+- Orientation et Insertion professionnelle (OIP)
+
+### UEs suivies au s4 :
 - Orientation et Insertion Professionnelle
 - Stage
